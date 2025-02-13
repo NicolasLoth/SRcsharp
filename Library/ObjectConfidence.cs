@@ -25,7 +25,49 @@ namespace SRcsharp.Library
 			set { _dimension = value; }
 		}
 
-		public ObjectConfidence(float pose, float dimension)
+		private float _label = 0.0f;
+
+		public float Label
+		{
+			get { return _label; }
+			set { _label = value; }
+		}
+
+		private float _look = 0.0f;
+
+		public float Look
+		{
+			get { return _look; }
+			set { _look = value; }
+		}
+
+        public float Value { 
+			get { return (_pose + _dimension + _label) / 3; }
+			set { _pose = value; _dimension = value; _label = value; }
+		}
+
+        public float Spatial
+        {
+            get { return (_pose + _dimension) / 2; }
+            set { _pose = value; _dimension = value; }
+        }
+
+		public Dictionary<string,float> AsDict
+		{
+			get 
+			{
+				return new Dictionary<string, float>()
+				{
+					{ "pose", _pose },
+					{ "dimension", _dimension },
+					{ "label", _label },
+					{ "look", _look }
+				};
+			}
+		}
+
+
+        public ObjectConfidence(float pose, float dimension)
 		{
 			_pose = pose;
 			_dimension = dimension;
