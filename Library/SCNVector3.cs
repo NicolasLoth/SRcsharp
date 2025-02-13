@@ -42,7 +42,7 @@ namespace SRcsharp.Library
 
 
 
-        public SCNVector3[] Nearest(SCNVector3[] pts)
+        public static SCNVector3[] Nearest(SCNVector3[] pts)
         {
             return pts.OrderBy(scnVec => scnVec.Length).ToArray();
         }
@@ -56,7 +56,20 @@ namespace SRcsharp.Library
         {
             return new SCNVector3(left.RawValue + right.RawValue);
         }
+        public static SCNVector3 operator *(SCNVector3 left, SCNVector3 right)
+        {
+            return new SCNVector3(left.RawValue * right.RawValue);
+        }
 
+        public static SCNVector3 operator /(SCNVector3 left, SCNVector3 right)
+        {
+            return new SCNVector3(left.RawValue / right.RawValue);
+        }
+
+        public static SCNVector3 operator /(SCNVector3 left, float scalar)
+        {
+            return new SCNVector3(left.RawValue / scalar);
+        }
 
     }
 }
