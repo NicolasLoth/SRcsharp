@@ -10,16 +10,16 @@ namespace SRcsharp.Library
     using System.Collections.Generic;
     using System.Linq;
 
-    public class SpatialOperation
+    public class SpatialInference
     {
-        public List<int> Input { get; set; }
-        public List<int> Output { get; set; }
+        public int[] Input { get; set; }
+        public int[] Output { get; set; }
         public string Operation { get; set; }
         public bool Succeeded { get; set; }
         public string Error { get; set; }
         public SpatialReasoner Fact { get; set; }
 
-        public SpatialOperation(List<int> input, string operation, SpatialReasoner fact)
+        public SpatialInference(int[] input, string operation, SpatialReasoner fact)
         {
             Input = input;
             Operation = operation;
@@ -28,42 +28,42 @@ namespace SRcsharp.Library
 
             if (operation.StartsWith("filter("))
             {
-                string condition = operation.Substring(7, endIdx - 7);
+                string condition = operation.Substring(0, endIdx - 7);
                 Filter(condition);
             }
             else if (operation.StartsWith("pick("))
             {
-                string relations = operation.Substring(5, endIdx - 5);
+                string relations = operation.Substring(0, endIdx - 5);
                 Pick(relations);
             }
             else if (operation.StartsWith("select("))
             {
-                string terms = operation.Substring(7, endIdx - 7);
+                string terms = operation.Substring(0, endIdx - 7);
                 Select(terms);
             }
             else if (operation.StartsWith("sort("))
             {
-                string attribute = operation.Substring(5, endIdx - 5);
+                string attribute = operation.Substring(0, endIdx - 5);
                 Sort(attribute);
             }
             else if (operation.StartsWith("slice("))
             {
-                string range = operation.Substring(6, endIdx - 6);
+                string range = operation.Substring(0, endIdx - 6);
                 Slice(range);
             }
             else if (operation.StartsWith("produce("))
             {
-                string terms = operation.Substring(8, endIdx - 8);
+                string terms = operation.Substring(0, endIdx - 8);
                 Produce(terms);
             }
             else if (operation.StartsWith("calc("))
             {
-                string assignments = operation.Substring(5, endIdx - 5);
+                string assignments = operation.Substring(0, endIdx - 5);
                 Calc(assignments);
             }
             else if (operation.StartsWith("map("))
             {
-                string assignments = operation.Substring(4, endIdx - 4);
+                string assignments = operation.Substring(0, endIdx - 4);
                 Map(assignments);
             }
         }
@@ -72,18 +72,18 @@ namespace SRcsharp.Library
         {
             if (!Output.Contains(index))
             {
-                Output.Add(index);
+                Output.Append(index);
             }
         }
 
         public void Filter(string condition)
         {
-            var predicate = SpatialInference.AttributePredicate(condition);
-            var baseObjects = Fact.Base["objects"] as List<object>;
+            var predicate = AttributePredicate(condition);
+            var baseObjects = Fact.Base["objects"] as object[];
 
             foreach (var i in Input)
             {
-                bool result = predicate.EvaluateWith(baseObjects[i]);
+                bool result = predicate.Invoke(baseObjects[i]);
                 if (result)
                 {
                     Add(i);
@@ -397,6 +397,62 @@ namespace SRcsharp.Library
 
             Succeeded = Output.Count > 0;
         }
+
+        public bool HasFailed()
+        {
+            return !string.IsNullOrEmpty(error);
+        }
+
+        public bool IsManipulating()
+        {
+            return operation.StartsWith("filter") ||
+                   operation.StartsWith("pick") ||
+                   operation.StartsWith("select") ||
+                   operation.StartsWith("produce") ||
+                   operation.StartsWith("slice");
+        }
+
+        public Dictionary<string, object> AsDict()
+        {
+            return new Dictionary<string, object>
+                {
+                    { "operation", operation },
+                    { "input", input },
+                    { "output", output },
+                    { "error", error },
+                    { "succeeded", succeeded }
+                };
+        }
+
+        public static Predicate<string> AttributePredicate(string condition)
+        {
+            string cond = condition.Trim();
+
+            // Iterate through boolean attributes and modify condition
+            foreach (var word in SpatialObject.BooleanAttributes)
+            {
+                int index = 0;
+                while ((index = cond.IndexOf(word, index)) != -1)
+                {
+                    if (index + word.Length < cond.Length)
+                    {
+                        var ahead = cond.Substring(index + word.Length, Math.Min(5, cond.Length - index - word.Length));
+                        if (!ahead.Contains("=") && !ahead.Contains("<") && !ahead.Contains(">"))
+                        {
+                            cond = cond.Substring(0, index) + word + " == TRUE" + cond.Substring(index + word.Length);
+                        }
+                    }
+                    else
+                    {
+                        cond = cond.Substring(0, index) + word + " == TRUE";
+                    }
+                    index += word.Length;
+                }
+            }
+
+            return new Predicate<string>((s) => s == cond);
+        }
+
 
 
         public static class StringExtensions

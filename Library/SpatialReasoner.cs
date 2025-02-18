@@ -48,8 +48,50 @@ namespace SRcsharp.Library
 			set { _objects = value; }
 		}
 
-        #endregion
+		private SpatialObject? _observer;
+
+		public SpatialObject? Observer
+		{
+			get { return _observer; }
+			set { _observer = value; }
+		}
+
+		private Dictionary<int,SpatialRelation> _relMap;
+
+		public Dictionary<int,SpatialRelation> RelMap
+		{
+			get { return _relMap; }
+			set { _relMap = value; }
+		}
+
+		private SpatialInference[] _chain;
+
+		public SpatialInference[] Chain
+		{
+			get { return _chain; }
+			set { _chain = value; }
+		}
+
+		private Dictionary<string,object> _base;
+
+		public Dictionary<string,object> Base
+		{
+			get { return _base; }
+			set { _base = value; }
+		}
+
+		private DateTime _snapTime = DateTime.Now;
+
+		public DateTime SnapTime
+		{
+			get { return _snapTime; }
+			set { _snapTime = value; }
+		}
 
 
-    }
+
+		#endregion
+
+
+	}
 }
