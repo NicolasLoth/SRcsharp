@@ -1,0 +1,361 @@
+[
+  {
+    "Code": "Near",
+    "Predicate": "Near",
+    "Preposition": "To",
+    "Synonym": "Close",
+    "Reverse": "Near",
+    "Antonym": "Far"
+  },
+  {
+    "Code": "Far",
+    "Predicate": "Far",
+    "Preposition": "From",
+    "Synonym": "Close",
+    "Reverse": "Far",
+    "Antonym": "Near"
+  },
+  {
+    "Code": "Left",
+    "Predicate": "Left",
+    "Preposition": "Of",
+    "Synonym": "To The Left"
+  },
+  {
+    "Code": "Right",
+    "Predicate": "Right",
+    "Preposition": "Of",
+    "Synonym": "To The Right"
+  },
+  {
+    "Code": "Ahead",
+    "Predicate": "Ahead",
+    "Preposition": "Of",
+    "Synonym": "Before"
+  },
+  {
+    "Code": "Behind",
+    "Predicate": "Behind",
+    "Preposition": "",
+    "Synonym": "After"
+  },
+  {
+    "Code": "Above",
+    "Predicate": "Above",
+    "Preposition": "",
+    "Synonym": "Over",
+    "Reverse": "Below"
+  },
+  {
+    "Code": "Below",
+    "Predicate": "Below",
+    "Preposition": "",
+    "Synonym": "Under",
+    "Reverse": "Above"
+  },
+  {
+    "Code": "Ontop",
+    "Predicate": "On Top",
+    "Preposition": "Of",
+    "Synonym": "At The Top",
+    "Reverse": "Beneath"
+  },
+  {
+    "Code": "Beneath",
+    "Predicate": "Beneath",
+    "Preposition": "",
+    "Synonym": "Underneath",
+    "Reverse": "On Top"
+  },
+  {
+    "Code": "Upperside",
+    "Predicate": "At Upper Side",
+    "Preposition": "Of",
+    "Reverse": "At Lower Side"
+  },
+  {
+    "Code": "Lowerside",
+    "Predicate": "At Lower Side",
+    "Preposition": "Of",
+    "Reverse": "At Upper Side"
+  },
+  {
+    "Code": "Leftside",
+    "Predicate": "At Left Side",
+    "Preposition": "Of",
+    "Synonym": "At Left-Hand Side"
+  },
+  {
+    "Code": "Rightside",
+    "Predicate": "At Right Side",
+    "Preposition": "Of",
+    "Synonym": "At Right-Hand Side"
+  },
+  {
+    "Code": "Frontside",
+    "Predicate": "At Front Side",
+    "Preposition": "Of",
+    "Synonym": "At Forefront"
+  },
+  {
+    "Code": "Backside",
+    "Predicate": "At Back Side",
+    "Preposition": "Of",
+    "Synonym": "At Rear Side"
+  },
+  {
+    "Code": "Aligned",
+    "Predicate": "Aligned",
+    "Preposition": "With",
+    "Synonym": "Parallel",
+    "Reverse": "Aligned"
+  },
+  {
+    "Code": "Orthogonal",
+    "Predicate": "Orthogonal",
+    "Preposition": "To",
+    "Synonym": "Perpendicular",
+    "Reverse": "Orthogonal"
+  },
+  {
+    "Code": "Opposite",
+    "Predicate": "Opposite",
+    "Preposition": "",
+    "Synonym": "Vis-A-Vis",
+    "Reverse": "Opposite"
+  },
+  {
+    "Code": "Inside",
+    "Predicate": "Inside",
+    "Preposition": "",
+    "Synonym": "Within",
+    "Reverse": "Containing"
+  },
+  {
+    "Code": "Containing",
+    "Predicate": "Containing",
+    "Preposition": "",
+    "Synonym": "Contains",
+    "Reverse": "Inside"
+  },
+  {
+    "Code": "Crossing",
+    "Predicate": "Crossing",
+    "Preposition": ""
+  },
+  {
+    "Code": "Overlapping",
+    "Predicate": "Overlapping",
+    "Preposition": "",
+    "Synonym": "Intersecting",
+    "Reverse": "Overlapping",
+    "Antonym": "Disjoint"
+  },
+  {
+    "Code": "Disjoint",
+    "Predicate": "Disjoint",
+    "Preposition": "To",
+    "Reverse": "Disjoint",
+    "Antonym": "Overlapping"
+  },
+  {
+    "Code": "Touching",
+    "Predicate": "Touching",
+    "Preposition": "",
+    "Reverse": "Touching"
+  },
+  {
+    "Code": "FrontAligned",
+    "Predicate": "Front Aligned",
+    "Preposition": "With",
+    "Reverse": "Front Aligned"
+  },
+  {
+    "Code": "Meeting",
+    "Predicate": "Meeting",
+    "Preposition": "",
+    "Reverse": "Meeting"
+  },
+  {
+    "Code": "Beside",
+    "Predicate": "Beside",
+    "Preposition": "",
+    "Reverse": "Beside"
+  },
+  {
+    "Code": "Fitting",
+    "Predicate": "Fitting",
+    "Preposition": "Into",
+    "Reverse": "Exceeding"
+  },
+  {
+    "Code": "Exceeding",
+    "Predicate": "Exceeding",
+    "Preposition": "Into",
+    "Reverse": "Fitting"
+  },
+  {
+    "Code": "On",
+    "Predicate": "On",
+    "Preposition": "",
+    "Reverse": "Beneath"
+  },
+  {
+    "Code": "At",
+    "Predicate": "At",
+    "Preposition": "",
+    "Reverse": "Meeting"
+  },
+  {
+    "Code": "By",
+    "Predicate": "By",
+    "Preposition": "",
+    "Reverse": "By"
+  },
+  {
+    "Code": "In",
+    "Predicate": "In",
+    "Preposition": "",
+    "Reverse": "Containing"
+  },
+  {
+    "Code": "SameWidth",
+    "Predicate": "Same Width",
+    "Preposition": "As",
+    "Synonym": "Similar Width",
+    "Reverse": "Same Width",
+    "Verb": "Has"
+  },
+  {
+    "Code": "SameHeight",
+    "Predicate": "Same Height",
+    "Preposition": "As",
+    "Synonym": "Similar Height",
+    "Reverse": "Same Height",
+    "Verb": "Has"
+  },
+  {
+    "Code": "SameDepth",
+    "Predicate": "Same Depth",
+    "Preposition": "As",
+    "Synonym": "Similar Depth",
+    "Reverse": "Same Depth",
+    "Verb": "Has"
+  },
+  {
+    "Code": "SameLength",
+    "Predicate": "Same Length",
+    "Preposition": "As",
+    "Synonym": "Similar Length",
+    "Reverse": "Same Length",
+    "Verb": "Has"
+  },
+  {
+    "Code": "SameFootprint",
+    "Predicate": "Same Footprint",
+    "Preposition": "As",
+    "Synonym": "Similar Base Area",
+    "Reverse": "Same Footprint",
+    "Verb": "Has"
+  },
+  {
+    "Code": "SameFront",
+    "Predicate": "Same Front Face",
+    "Preposition": "As",
+    "Synonym": "Similar Front Face",
+    "Reverse": "Same Front Face",
+    "Verb": "Has"
+  },
+  {
+    "Code": "SameSide",
+    "Predicate": "Same Side Face",
+    "Preposition": "As",
+    "Synonym": "Similar Side Face",
+    "Reverse": "Same Side Face",
+    "Verb": "Has"
+  },
+  {
+    "Code": "SameVolume",
+    "Predicate": "Same Volume",
+    "Preposition": "As",
+    "Synonym": "Similar Volume",
+    "Reverse": "Same Volume",
+    "Verb": "Has"
+  },
+  {
+    "Code": "SameCuboid",
+    "Predicate": "Same Cuboid",
+    "Preposition": "As",
+    "Synonym": "Similar Cuboid",
+    "Reverse": "Same Cuboid",
+    "Verb": "Has"
+  },
+  {
+    "Code": "SameCenter",
+    "Predicate": "Same Center",
+    "Preposition": "As",
+    "Synonym": "Similar Center",
+    "Reverse": "Same Center",
+    "Verb": "Has"
+  },
+  {
+    "Code": "SameShape",
+    "Predicate": "Same Shape",
+    "Preposition": "As",
+    "Synonym": "Similar Shape",
+    "Reverse": "Same Shape",
+    "Verb": "Has"
+  },
+  {
+    "Code": "Congruent",
+    "Predicate": "Congruent",
+    "Preposition": "As",
+    "Reverse": "Congruent"
+  },
+  {
+    "Code": "Smaller",
+    "Predicate": "Smaller",
+    "Preposition": "Than",
+    "Synonym": "Tinier",
+    "Reverse": "Bigger"
+  },
+  {
+    "Code": "Bigger",
+    "Predicate": "Bigger",
+    "Preposition": "Than",
+    "Synonym": "Larger",
+    "Reverse": "Smaller"
+  },
+  {
+    "Code": "Shorter",
+    "Predicate": "Shorter",
+    "Preposition": "Than",
+    "Reverse": "Longer"
+  },
+  {
+    "Code": "Longer",
+    "Predicate": "Longer",
+    "Preposition": "Than",
+    "Reverse": "Shorter"
+  },
+  {
+    "Code": "Taller",
+    "Predicate": "Taller",
+    "Preposition": "Than",
+    "Reverse": "Shorter"
+  },
+  {
+    "Code": "Thinner",
+    "Predicate": "Thinner",
+    "Preposition": "Than",
+    "Synonym": "Narrower",
+    "Reverse": "Wider"
+  },
+  {
+    "Code": "Wider",
+    "Predicate": "Wider",
+    "Preposition": "Than",
+    "Synonym": "Thicker",
+    "Reverse": "Thinner"
+  }
+]

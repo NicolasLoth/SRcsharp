@@ -87,26 +87,25 @@ namespace SRcsharp.Library
 					str = _subject.Type;
 				}
 
+
+				str.Concat(" " + SpatialTerms.Instance.GetTermWithVerbAndPreposition(_predicate) + " ");
+
+
+				if(!string.IsNullOrEmpty(_object.Label)) {
+					str = str + _object.Label;
+                }
+				else if(!string.IsNullOrEmpty(_object.Type)) {
+					str = str + _object.Type;
+				}
+				else
+				{
+					str = str + _object.Id;
+				}
+				str = str + string.Format("{0} 𝛥:{1:F1}  𝜶:{2:F1}°)", _predicate.ToString(), _delta, Yaw);
 				return str;
 
-				//str.Concat(" " + SpatialTerms.termWithVerbAndPreposition(_predicate) + "");
 
-				////TO migrate:
-				//		str = str + " " + SpatialTerms.termWithVerbAndPreposition(predicate) + " "
-				//if !object.label.isEmpty {
-				//			str = str + object.label
-				//}
-				//		else if !object.type.isEmpty {
-				//			str = str + object.type
-				//}
-				//		else
-				//		{
-				//			str = str + object.id
-				//}
-				//		str = str + String(format: " (\(predicate.rawValue) 𝛥:%.2f  𝜶:%.1f°)", delta, yaw)
-				//return str
-
-            } 
+			} 
 		}
 
     }

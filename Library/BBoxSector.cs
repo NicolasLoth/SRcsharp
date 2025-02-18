@@ -14,7 +14,17 @@ namespace SRcsharp.Library
     {
 
         [Flags]
-        public enum BBoxSectors { None = 0, Inside=1, Ahead=2, Behind=4, Left=8, Right=16, Over=32, Under=64 };
+        public enum BBoxSectors 
+        { 
+            None = 0, 
+            Inside=1<<0, 
+            Ahead=1<<2, 
+            Behind=1<<3, 
+            Left=1<<4, 
+            Right=1<<5, 
+            Over=1<<6, 
+            Under=1<<7 
+        };
 
         public const BBoxSectors AL = BBoxSectors.Ahead | BBoxSectors.Left;
         public const BBoxSectors AR = BBoxSectors.Ahead | BBoxSectors.Right;

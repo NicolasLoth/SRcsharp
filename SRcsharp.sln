@@ -7,6 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SRcsharp", "SRcsharp.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SRcsharpTest", "..\SRcsharpTest\SRcsharpTest.csproj", "{0F9C1BEA-B293-4BF1-A08F-340F0C7CDB70}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configs", "Configs", "{99DAFCE5-60D8-4CA8-87AA-6F7549C99377}"
+	ProjectSection(SolutionItems) = preProject
+		spatialterms.json = spatialterms.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

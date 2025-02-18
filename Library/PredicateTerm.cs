@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SRcsharp.Library
 {
-    public struct PedicateTerm
+    public struct PredicateTerm
     {
 		private SpatialPredicate _code;
 
@@ -64,7 +64,7 @@ namespace SRcsharp.Library
 			set { _verb = value; }
 		}
 
-        public PedicateTerm(SpatialPredicate code, string pred, string preposition, string synonym, string reverse, string antonym, string verb)
+        public PredicateTerm(SpatialPredicate code, string pred, string preposition, string synonym, string reverse, string antonym, string verb)
         {
 			_code = code;		
 			_predicate = pred;
