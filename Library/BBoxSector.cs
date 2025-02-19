@@ -8,23 +8,23 @@ using System.Threading.Tasks;
 namespace SRcsharp.Library
 {
 
+    [Flags]
+    public enum BBoxSectors
+    {
+        None = 0,
+        Inside = 1 << 0,
+        Ahead = 1 << 2,
+        Behind = 1 << 3,
+        Left = 1 << 4,
+        Right = 1 << 5,
+        Over = 1 << 6,
+        Under = 1 << 7
+    };
+
     // Directional 3x3x3 BBox Sector Matrix (27 object-related boundary sectors)
     //Migration comment:
     public static class BBoxSector
-    {
-
-        [Flags]
-        public enum BBoxSectors 
-        { 
-            None = 0, 
-            Inside=1<<0, 
-            Ahead=1<<2, 
-            Behind=1<<3, 
-            Left=1<<4, 
-            Right=1<<5, 
-            Over=1<<6, 
-            Under=1<<7 
-        };
+    { 
 
         public const BBoxSectors AL = BBoxSectors.Ahead | BBoxSectors.Left;
         public const BBoxSectors AR = BBoxSectors.Ahead | BBoxSectors.Right;

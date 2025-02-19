@@ -88,8 +88,6 @@ namespace SRcsharp.Library
 			set { _snapTime = value; }
 		}
 
-
-
 		#endregion
 
 

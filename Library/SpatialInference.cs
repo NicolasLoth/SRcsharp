@@ -12,18 +12,25 @@ namespace SRcsharp.Library
 
     public class SpatialInference
     {
-        public int[] Input { get; set; }
-        public int[] Output { get; set; }
-        public string Operation { get; set; }
-        public bool Succeeded { get; set; }
-        public string Error { get; set; }
-        public SpatialReasoner Fact { get; set; }
+        private int[] _input;
+        private int[] _output;
+        private string _operation;
+        private bool _succeeded;
+        private string _error;
+        private SpatialReasoner _fact;
+
+        public int[] Input { get => _input; set => _input = value; }
+        public int[] Output { get => _output; set => _output = value; }
+        public string Operation { get => _operation; set => _operation = value; }
+        public bool Succeeded { get => _succeeded; set => _succeeded = value; }
+        public string Error { get => _error; set => _error = value; }
+        public SpatialReasoner Fact { get => _fact; set => _fact = value; }
 
         public SpatialInference(int[] input, string operation, SpatialReasoner fact)
         {
-            Input = input;
-            Operation = operation;
-            Fact = fact;
+            _input = input;
+            _operation = operation;
+            _fact = fact;
             int endIdx = operation.Length - 1;
 
             if (operation.StartsWith("filter("))
