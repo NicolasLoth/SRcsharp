@@ -90,6 +90,11 @@ namespace SRcsharp.Library
 
 		#endregion
 
+		public List<SpatialRelation> RelationsWith(int objIdx, string predicate)
+		{
+			throw new NotImplementedException();
+		}
+
 
 	}
 }

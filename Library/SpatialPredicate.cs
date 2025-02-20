@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using static SRcsharp.Library.SpatialPredicate;
@@ -9,6 +12,15 @@ namespace SRcsharp.Library
 {
     public struct SpatialPredicate
     {
+        private static List<string> _allPredicateNames;
+
+        public static List<string> AllPredicateNames
+        {
+            get { return _allPredicateNames; }
+            set { _allPredicateNames = value; }
+        }
+
+
         public SpatialPredicate()
         {
             Proximity = SpatialPredicateProximity.Undefined;
@@ -21,6 +33,17 @@ namespace SRcsharp.Library
             Similarity = SpatialPredicateSimilarity.Undefined;
             Visibility = SpatialPredicateVisibility.Undefined;
             Geography = SpatialPredicateGeography.Undefined;
+            LoadAllPredicateNames();
+        }
+
+        private static void LoadAllPredicateNames()
+        {
+            _allPredicateNames = new List<string>();
+            var allEnums = typeof(SpatialPredicate).GetNestedTypes().Where(t => t.GetCustomAttribute<SpatialPredicateEnumAttribute>() != null);
+            foreach(var predEnum in allEnums)
+            {
+                _allPredicateNames.AddRange(predEnum.GetEnumNames());
+            }
         }
 
         public static bool operator ==(SpatialPredicate pred1, SpatialPredicate pred2)
@@ -33,8 +56,10 @@ namespace SRcsharp.Library
             return !pred1.Equals(pred2);
         }
 
-        public static SpatialPredicate CreateSpatialPredicateByName(string name)
+        public static SpatialPredicate CreateSpatialPredicateByName(string name, bool returnUndefinedPredicate = false)
         {
+            if (!returnUndefinedPredicate && !_allPredicateNames.Contains(name)) { throw new Exception("SpatialPredicate type not found"); }
+
             var enumType = SpatialPredicate.GetSpatialPredicateEnumTypeForValue(name);
             var type = SpatialPredicate.GetSpatialPredicateTypeForValue(name);
             var pred = SpatialPredicate.CreateSpatialPredicate(enumType, (int)Enum.Parse(type, name));
@@ -100,6 +125,8 @@ namespace SRcsharp.Library
         public static Type GetSpatialPredicateTypeForValue(string value)
         {
 
+            if (!_allPredicateNames.Contains(value)) { return null; }
+
             if (Enum.GetNames<SpatialPredicateProximity>().Contains(value))
                 return typeof(SpatialPredicateProximity);
             if (Enum.GetNames<SpatialPredicateDirectionality>().Contains(value))
@@ -122,10 +149,12 @@ namespace SRcsharp.Library
                 return typeof(SpatialPredicateGeography);
 
             return null;
+
         }
 
-        public static SpatialPredicateTypes GetSpatialPredicateEnumTypeForValue(string value, bool ignoreCase = true)
+        public static SpatialPredicateTypes GetSpatialPredicateEnumTypeForValue(string value)
         {
+            if (!_allPredicateNames.Contains(value)) { return SpatialPredicateTypes.None; }
 
             if (Enum.GetNames<SpatialPredicateProximity>().Contains(value))
                 return SpatialPredicateTypes.Proximity;
@@ -179,6 +208,7 @@ namespace SRcsharp.Library
         }
 
         [Flags]
+        [SpatialPredicateEnumAttribute]
         public enum SpatialPredicateTypes 
         { 
             None= 0, 
@@ -207,6 +237,7 @@ namespace SRcsharp.Library
 
 
         [Flags]
+        [SpatialPredicateEnumAttribute]
         public enum SpatialPredicateProximity
         {
             Undefined = 0,
@@ -215,6 +246,7 @@ namespace SRcsharp.Library
         }
 
         [Flags]
+        [SpatialPredicateEnumAttribute]
         public enum SpatialPredicateDirectionality
         {
             Undefined = 0,
@@ -227,6 +259,7 @@ namespace SRcsharp.Library
         }
 
         [Flags]
+        [SpatialPredicateEnumAttribute]
         public enum SpatialPredicateAdjacency
         {
             Undefined = 0,
@@ -241,6 +274,7 @@ namespace SRcsharp.Library
         }
 
         [Flags]
+        [SpatialPredicateEnumAttribute]
         public enum SpatialPredicateOrientations
         {
             Undefined = 0,
@@ -254,6 +288,7 @@ namespace SRcsharp.Library
         }
 
         [Flags]
+        [SpatialPredicateEnumAttribute]
         public enum SpatialPredicateAssembly
         {
             Undefined = 0,
@@ -268,6 +303,7 @@ namespace SRcsharp.Library
         }
 
         [Flags]
+        [SpatialPredicateEnumAttribute]
         public enum SpatialPredicateContacts //== Connectivity
         {
             Undefined = 0,
@@ -278,6 +314,7 @@ namespace SRcsharp.Library
         }
 
         [Flags]
+        [SpatialPredicateEnumAttribute]
         public enum SpatialPredicateComparability
         {
             Undefined = 0,
@@ -293,6 +330,7 @@ namespace SRcsharp.Library
         }
 
         [Flags]
+        [SpatialPredicateEnumAttribute]
         public enum SpatialPredicateSimilarity
         {
             Undefined = 0,
@@ -305,12 +343,16 @@ namespace SRcsharp.Library
             SameFootprint = 1 << 6,
             SameVolume = 1 << 7,
             SameCenter = 1 << 8,
-            SameCuboid = 1 << 9,
-            Congruent = 1 << 10,
-            SameShape = 1 << 11
+            SamePosition = 1 << 9,
+            SameCuboid = 1 << 10,
+            Congruent = 1 << 11,
+            SameShape = 1 << 12,
+            SamePerimeter = 1 << 13,
+            SameSurface = 1 << 14
         }
 
         [Flags]
+        [SpatialPredicateEnumAttribute]
         public enum SpatialPredicateVisibility
         {
             Undefined = 0,
@@ -334,6 +376,7 @@ namespace SRcsharp.Library
         }
 
         [Flags]
+        [SpatialPredicateEnumAttribute]
         public enum SpatialPredicateGeography
         {
             Undefined = 0,
@@ -348,6 +391,7 @@ namespace SRcsharp.Library
         }
 
         [Flags]
+        [SpatialPredicateEnumAttribute]
         public enum SpatialPredicateSectors
         {
             Undefined = 0,

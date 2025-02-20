@@ -70,6 +70,6 @@ namespace SRcsharp.Library
         {
             return new SCNVector3(left.RawValue / scalar);
         }
-
+        
     }
 }
