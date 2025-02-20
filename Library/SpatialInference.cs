@@ -407,27 +407,27 @@ namespace SRcsharp.Library
 
         public bool HasFailed()
         {
-            return !string.IsNullOrEmpty(error);
+            return !string.IsNullOrEmpty(_error);
         }
 
         public bool IsManipulating()
         {
-            return operation.StartsWith("filter") ||
-                   operation.StartsWith("pick") ||
-                   operation.StartsWith("select") ||
-                   operation.StartsWith("produce") ||
-                   operation.StartsWith("slice");
+            return _operation.StartsWith("filter") ||
+                   _operation.StartsWith("pick") ||
+                   _operation.StartsWith("select") ||
+                   _operation.StartsWith("produce") ||
+                   _operation.StartsWith("slice");
         }
 
         public Dictionary<string, object> AsDict()
         {
             return new Dictionary<string, object>
                 {
-                    { "operation", operation },
-                    { "input", input },
-                    { "output", output },
-                    { "error", error },
-                    { "succeeded", succeeded }
+                    { "operation", _operation },
+                    { "input", _input },
+                    { "output", _output },
+                    { "error", _error },
+                    { "succeeded", _succeeded }
                 };
         }
 
@@ -436,7 +436,7 @@ namespace SRcsharp.Library
             string cond = condition.Trim();
 
             // Iterate through boolean attributes and modify condition
-            foreach (var word in SpatialObject.BooleanAttributes)
+            foreach (var word in SpatialObject.BooleanAttributes.Keys)
             {
                 int index = 0;
                 while ((index = cond.IndexOf(word, index)) != -1)
@@ -461,28 +461,6 @@ namespace SRcsharp.Library
         }
 
 
-
-        public static class StringExtensions
-        {
-            public static List<string> Keywords(this string str)
-            {
-                var scanner = new Scanner(str);
-                var keywords = new List<string>();
-                while (!scanner.IsAtEnd)
-                {
-                    var result = scanner.ScanCharactersFrom(new CharacterSet("abcdefghijklmnopqrstuvwxyz"));
-                    if (result != null)
-                    {
-                        if (!keywords.Contains(result))
-                        {
-                            keywords.Add(result);
-                        }
-                    }
-                    scanner.ScanUpToCharactersFrom(new CharacterSet("abcdefghijklmnopqrstuvwxyz"));
-                }
-                return keywords;
-            }
-        }
 
     }
 }

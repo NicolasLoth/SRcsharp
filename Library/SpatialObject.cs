@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
@@ -231,7 +232,7 @@ namespace SRcsharp.Library
             get
             {
                 if (_context != null)
-                    return -(float)(Yaw + (float)Math.Truncate((Math.Atan2((float)_context.North.DY, (float)_context.North.DX) * 180.0 / Math.PI) - 90.0) % 360);
+                    return -(float)(Yaw + (float)Math.Truncate((Math.Atan2((float)_context.North.DY, (float)_context.North.DX) * 180.0 / Math.PI) - 90.0) / 360);
                 return 0.0f;
 
             }
@@ -920,29 +921,462 @@ namespace SRcsharp.Library
             var theta = subject.Angle - _angle;
             var isDisjoint = true;
             var isConnected = false;
+            var aligned = false;
+            var isBeside = false;
 
             /// calculations in local object space
             var localPts = ConvertIntoLocal(subject.CalcPoints());
-            var zones = BBoxSectors.None;
+            var zones = new List<BBoxSectors>();
             foreach(var pt in localPts)
             {
-                zones |= IsSectorOf(pt, false, 0.00001f);
+                zones.Add(IsSectorOf(pt, false, 0.00001f));
             }
             var localCenter = ConvertIntoLocal(subject.Center);
             var centerZone = IsSectorOf(localCenter, false, -Adjustment.MaxGap);
 
-            (gap, minDistance) = CalcAndAddProximities(result, subject, centerDistance, theta);
-            (gap, minDistance) = CalcAndAddDirectionalities(result, subject, localCenter, centerZone, theta);
+            (gap, minDistance) = CalcAndAddProximities(result, subject, gap, minDistance, centerDistance, theta);
+            (gap, minDistance) = CalcAndAddDirectionalities(result, subject, gap, minDistance, localCenter, centerZone, theta);
+            (gap, minDistance, canNotOverlap, aligned, isBeside) = CalcAndAddAdjacancies(result, subject, gap, minDistance, canNotOverlap, aligned, isBeside, localPts, centerZone, theta);
+            (gap, minDistance) = CalcAndAddAssembly(result, subject, gap, minDistance, aligned, isBeside, isDisjoint, canNotOverlap, isConnected, localPts, zones, centerDistance, theta);
+            (gap, minDistance) = CalcAndAddOrientations(result, subject, gap, minDistance, localCenter, centerDistance, theta);
+            CalcAndAddVisibilities(result, subject, centerDistance);
 
             return result;
 
-            throw new NotImplementedException();
         }
 
-        public (float, float) CalcAndAddDirectionalities(List<SpatialRelation> result, SpatialObject subject, SCNVector3 localCenter, BBoxSectors centerZone, float theta)
+        public void CalcAndAddVisibilities(List<SpatialRelation> result, SpatialObject subject, float centerDistance)
         {
-            var minDistance = 0.0f;
-            var gap = 0.0f;
+            if(_context == null || _context.Deduce.HasFlag(SpatialPredicatedCategories.Visbility))
+            {
+                if (_type == "Person" || (_cause == ObjectCause.SelfTracked && _existence == SpatialExistence.Real))
+                {
+                    var rad = Math.Atan2(subject.Center.X, subject.Center.Z);
+                    var angle = rad * 180.0f / Math.PI;
+                    float hourAngle = 30.0f; // 360.0/12.0
+                    if (angle < 0.0f)
+                    {
+                        angle -= hourAngle / 2.0f;
+                    }
+                    else
+                    {
+                        angle += hourAngle / 2.0f;
+                    }
+
+                    int cnt = (int)Math.Round(angle / hourAngle);
+                    bool doit = true;
+                    SpatialPredicate pred = SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.TwelveOClock);
+
+                    switch (cnt)
+                    {
+                        case 4:
+                            pred = SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.EightOClock);
+                            break;
+                        case 3:
+                            pred = SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.NineOClock);
+                            break;
+                        case 2:
+                            pred = SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.TenOClock);
+                            break;
+                        case 1:
+                            pred = SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.ElevenOClock);
+                            break;
+                        case 0:
+                            pred = SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.TwelveOClock);
+                            break;
+                        case -1:
+                            pred = SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.OneOClock);
+                            break;
+                        case -2:
+                            pred = SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.TwoOClock);
+                            break;
+                        case -3:
+                            pred = SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.ThreeOClock);
+                            break;
+                        case -4:
+                            pred = SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.FourOClock);
+                            break;
+                        default:
+                            doit = false;
+                            break;
+                    }
+
+                    if (doit)
+                    {
+                        SpatialRelation relation = new SpatialRelation(subject, pred, this, centerDistance, (float)rad);
+                        result.Add(relation);
+
+                        // Additional check for tangible proximity (<= 1.25 meters)
+                        if (centerDistance <= 1.25f)
+                        {
+                            relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.Tangible), this, centerDistance, (float)rad);
+                            result.Add(relation);
+                        }
+                    }
+                }
+            }
+        }
+
+        public (float, float) CalcAndAddOrientations(List<SpatialRelation> result, SpatialObject subject, float gap, float minDistance, SCNVector3 localCenter, float centerDistance, float theta)
+        {
+
+            // If objects are aligned based on angle (within maxAngleDelta)
+            if (Math.Abs(theta) < Adjustment.MaxAngleDelta)
+            {
+                gap = localCenter.Z;
+                SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateOrientations>((int)SpatialPredicateOrientations.Aligned), this, gap, theta);
+                result.Add(relation);
+
+                // Check if the objects are front-aligned
+                float frontGap = localCenter.Z + subject.Depth / 2.0f - _depth / 2.0f;
+                if (Math.Abs(frontGap) < Adjustment.MaxGap)
+                {
+                    relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateOrientations>((int)SpatialPredicateOrientations.FrontAligned), this, frontGap, theta);
+                    result.Add(relation);
+                }
+
+                // Check if the objects are back-aligned
+                float backGap = localCenter.Z - subject.Depth / 2.0f + _depth / 2.0f;
+                if (Math.Abs(backGap) < Adjustment.MaxGap)
+                {
+                    relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateOrientations>((int)SpatialPredicateOrientations.BackAligned), this, backGap, theta);
+                    result.Add(relation);
+                }
+
+                // Check if the objects are right-aligned
+                float rightGap = localCenter.X - subject.Width / 2.0f + _width / 2.0f;
+                if (Math.Abs(rightGap) < Adjustment.MaxGap)
+                {
+                    relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateOrientations>((int)SpatialPredicateOrientations.RightAligned), this, rightGap, theta);
+                    result.Add(relation);
+                }
+
+                // Check if the objects are left-aligned
+                float leftGap = localCenter.X + subject.Width / 2.0f - _width / 2.0f;
+                if (Math.Abs(leftGap) < Adjustment.MaxGap)
+                {
+                    relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateOrientations>((int)SpatialPredicateOrientations.LeftAligned), this, leftGap, theta);
+                    result.Add(relation);
+                }
+            }
+            else
+            {
+                // If not aligned, check for opposite or orthogonal orientations
+                gap = centerDistance;
+
+                // Check if objects are opposite to each other
+                if (Math.Abs(theta % Math.PI) < Adjustment.MaxAngleDelta)
+                {
+                    SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateOrientations>((int)SpatialPredicateOrientations.Opposite), this, gap, theta);
+                    result.Add(relation);
+                }
+                // Check if objects are orthogonal to each other
+                else if (Math.Abs(theta % (Math.PI / 2.0f)) < Adjustment.MaxAngleDelta)
+                {
+                    SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateOrientations>((int)SpatialPredicateOrientations.Orthogonal), this, gap, theta);
+                    result.Add(relation);
+                }
+            }
+
+            return (gap, minDistance);
+        }
+
+        public (float, float) CalcAndAddAssembly(List<SpatialRelation> result, SpatialObject subject, float gap, float minDistance, bool aligned, bool isBeside, bool isDisjoint, bool canNotOverlap, bool isConnected, SCNVector3[] localPts, List<BBoxSectors> zones, float centerDistance, float theta)
+        {
+            // If the object is beside another object, add a "Beside" relation
+            if (isBeside)
+            {
+                var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Beside), this, minDistance, theta);
+                result.Add(relation);
+            }
+
+            // Check if all zones contain 'i' (inside)
+            if (zones.All(zone => zone.HasFlag(BBoxSectors.Inside)))
+            {
+                isDisjoint = false;
+                SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Inside), this, centerDistance, theta);
+                result.Add(relation);
+                if(_context == null || _context.Deduce.HasFlag(SpatialPredicatedCategories.Connectivity))
+                {
+                    relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateContacts>((int)SpatialPredicateContacts.In), this, centerDistance, theta);
+                    result.Add(relation);
+                }
+            }
+            else
+            {
+                // Check if the subject is containing this object based on size and distance
+                if ((subject.Radius - Radius) > centerDistance / 2.0f && subject.Width > _width && subject.Height > _height && subject.Depth > _depth)
+                {
+                    isDisjoint = false;
+                    SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Containing), this, 0.0f, theta);
+                    result.Add(relation);
+                }
+                else
+                {
+                    int cnt = zones.Count(zone => zone.HasFlag(BBoxSectors.Inside));
+                    if (cnt > 0 && !canNotOverlap)
+                    {
+                        isDisjoint = false;
+                        SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Overlapping), this, centerDistance, theta);
+                        result.Add(relation);
+                    }
+
+                    // Compute crossings based on local points
+                    var crossings = 0;
+                    float minY = localPts[0].Y;
+                    float maxY = localPts[localPts.Length - 1].Y;
+                    float minX = float.MaxValue;
+                    float maxX = -float.MaxValue;
+                    float minZ = float.MaxValue;
+                    float maxZ = -float.MaxValue;
+
+                    foreach (var pt in localPts)
+                    {
+                        minX = Math.Min(minX, pt.X);
+                        maxX = Math.Max(maxX, pt.X);
+                        minZ = Math.Min(minZ, pt.Z);
+                        maxZ = Math.Max(maxZ, pt.Z);
+                    }
+
+                    if (!canNotOverlap)
+                    {
+                        if (minX < -_width / 2.0f && maxX > _width / 2.0f && minZ < _depth / 2.0f && maxZ > -_depth / 2.0f && minY < _height && maxY > 0)
+                        {
+                            crossings += 1;
+                        }
+                        if (minZ < -_depth / 2.0f && maxZ > _depth / 2.0f && minX < _width / 2.0f && maxX > -_width / 2.0f && minY < _height && maxY > 0)
+                        {
+                            crossings += 1;
+                        }
+                        if (minY < 0.0f && maxY > _height && minX < _width / 2.0f && maxX > -_width / 2.0f && minZ < _depth / 2.0f && maxZ > -_depth / 2.0f)
+                        {
+                            crossings += 1;
+                        }
+                        if (crossings > 0)
+                        {
+                            isDisjoint = false;
+                            SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Crossing), this, centerDistance, theta);
+                            result.Add(relation);
+                        }
+                    }
+
+                    // Compute overlap in each dimension
+                    float ylap = _height;
+                    if (maxY < _height && minY > 0) {
+                        ylap = maxY - minY;
+                    }
+                    else
+                    {
+                        if (minY > 0)
+                            ylap = Math.Abs(_height - minY);
+                        else
+                            ylap = Math.Abs(maxY);
+                    }
+                    float xlap = ComputeOverlap(minX, maxX, _width);
+                    float zlap = ComputeOverlap(minZ, maxZ, _depth);
+
+                    // Check for touching or meeting relations based on overlap
+                    if (minY < _height + Adjustment.MaxGap && maxY > -Adjustment.MaxGap)
+                    {
+                        gap = Math.Min(xlap, zlap);
+                        if (!aligned && canNotOverlap && gap > 0.0f && gap < Adjustment.MaxGap)
+                        {
+                            if ((maxX < -_width / 2.0f + Adjustment.MaxGap) || (minX > _width / 2.0f - Adjustment.MaxGap) ||
+                                (maxZ < -_depth / 2.0f + Adjustment.MaxGap) || (minZ > _depth / 2.0f - Adjustment.MaxGap))
+                            {
+                                SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Touching), this, gap, theta);
+                                result.Add(relation);
+                                if (!isConnected && (_context == null || _context.Deduce.HasFlag(SpatialPredicatedCategories.Connectivity)))
+                                {
+                                    relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateContacts>((int)SpatialPredicateContacts.By), this, gap, theta);
+                                    result.Add(relation);
+                                    isConnected = true;
+                                }
+                            }
+                            else
+                            {
+                                // Handling for rotated bounding boxes (not yet implemented)
+                                throw new NotImplementedException("OOPS, rotated bbox might cross: assembly relations by shortest distance not yet implemented!");
+                            }
+                        }
+                        else
+                        {
+                            if (xlap >= 0.0f && zlap >= 0.0f)
+                            {
+                                if (ylap > Adjustment.MaxGap && gap < Adjustment.MaxGap) // Beside
+                                {
+                                    if (xlap > Adjustment.MaxGap || zlap > Adjustment.MaxGap)
+                                    {
+                                        SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Meeting), this, Math.Max(xlap, zlap), theta);
+                                        result.Add(relation);
+                                        if (!isConnected && (_context == null || _context.Deduce.HasFlag(SpatialPredicatedCategories.Connectivity)) && subject.Volume < Volume)
+                                        {
+                                            relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateContacts>((int)SpatialPredicateContacts.At), this, gap, theta);
+                                            result.Add(relation);
+                                            isConnected = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Touching), this, gap, theta);
+                                        result.Add(relation);
+                                        if (!isConnected && (_context == null || _context.Deduce.HasFlag(SpatialPredicatedCategories.Connectivity)))
+                                        {
+                                            relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateContacts>((int)SpatialPredicateContacts.By), this, gap, theta);
+                                            result.Add(relation);
+                                            isConnected = true;
+                                        }
+                                    }
+                                }
+                                else // On top or underneath
+                                {
+                                    gap = ylap;
+                                    if (xlap > Adjustment.MaxGap && zlap > Adjustment.MaxGap)
+                                    {
+                                        SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Meeting), this, gap, theta);
+                                        result.Add(relation);
+                                    }
+                                    else
+                                    {
+                                        SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Touching), this, gap, theta);
+                                        result.Add(relation);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (isDisjoint)
+            {
+                gap = centerDistance;
+                SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Disjoint), this, gap, theta);
+                result.Add(relation);
+            }
+
+
+            return (gap, minDistance);
+        }
+
+        public (float, float, bool, bool, bool) CalcAndAddAdjacancies(List<SpatialRelation> result, SpatialObject subject, float gap, float minDistance, bool canNotOverlap, bool aligned, bool isBeside, SCNVector3[] localPts, BBoxSectors centerZone, float theta)
+        {
+
+            // Check if the center zone is not 'I' (neutral/inside zone)
+            if (centerZone != BBoxSectors.Inside)
+            {
+                // Check if the angle is aligned within a certain tolerance
+                if (Math.Abs(Math.Truncate(theta/(Math.PI / 2.0f))) < Adjustment.MaxAngleDelta)
+                {
+                    aligned = true;
+                }
+
+                // Compare the zone and compute the minimal distances
+                if (centerZone == BBoxSectors.Left)
+                {
+                    foreach (var pt in localPts)
+                    {
+                        minDistance = Math.Min(minDistance, pt.X - _width / 2.0f);
+                    }
+                    if (minDistance >= 0.0f)
+                    {
+                        isBeside = true;
+                        gap = minDistance;
+                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.LeftSide), this, gap, theta);
+                        result.Add(relation);
+                    }
+                }
+                else if (centerZone == BBoxSectors.Right)
+                {
+                    foreach (var pt in localPts)
+                    {
+                        minDistance = Math.Min(minDistance, -pt.X - Width / 2.0f);
+                    }
+                    if (minDistance >= 0.0f)
+                    {
+                        isBeside = true;
+                        gap = minDistance;
+                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.RightSide), this, gap, theta);
+                        result.Add(relation);
+                    }
+                }
+                else if (centerZone == BBoxSectors.Above)
+                {
+                    foreach (var pt in localPts)
+                    {
+                        minDistance = Math.Min(minDistance, pt.Y - Height);
+                    }
+                    if (minDistance >= 0.0f)
+                    {
+                        gap = minDistance;
+                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.OnTop), this, gap, theta);
+                        result.Add(relation);
+                        if(_context == null || _context.Deduce.HasFlag(SpatialPredicatedCategories.Connectivity))
+                        {
+                            relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateContacts>((int)SpatialPredicateContacts.On), this, gap, theta);
+                            result.Add(relation);
+                        }
+                        relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.UpperSide), this, gap, theta);
+                        result.Add(relation);
+                    }
+                }
+                else if (centerZone == BBoxSectors.Below)
+                {
+                    foreach (var pt in localPts)
+                    {
+                        minDistance = Math.Min(minDistance, -pt.y);
+                    }
+                    if (minDistance >= 0.0f)
+                    {
+                        gap = minDistance;
+                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.Beneath), this, gap, theta);
+                        result.Add(relation);
+                        relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.LowerSide), this, gap, theta);
+                        result.Add(relation);
+                    }
+                }
+                else if (centerZone == BBoxSectors.Ahead)
+                {
+                    foreach (var pt in localPts)
+                    {
+                        minDistance = Math.Min(minDistance, pt.Z - _depth / 2.0f);
+                    }
+                    if (minDistance >= 0.0f)
+                    {
+                        isBeside = true;
+                        gap = minDistance;
+                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.FrontSide), this, gap, theta);
+                        result.Add(relation);
+                    }
+                }
+                else if (centerZone == BBoxSectors.Behind)
+                {
+                    foreach (var pt in localPts)
+                    {
+                        minDistance = Math.Min(minDistance, -pt.Z - _depth / 2.0f);
+                    }
+                    if (minDistance >= 0.0f)
+                    {
+                        isBeside = true;
+                        gap = minDistance;
+                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.BackSide), this, gap, theta);
+                        result.Add(relation);
+                    }
+                }
+
+                // If the object is beside another object, add a "Beside" relation
+                if (isBeside)
+                {
+                    var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Beside), this, minDistance, theta);
+                    result.Add(relation);
+                }
+            }
+
+            return (gap, minDistance, canNotOverlap, aligned, isBeside);
+        }
+
+        public (float, float) CalcAndAddDirectionalities(List<SpatialRelation> result, SpatialObject subject, float gap, float minDistance, SCNVector3 localCenter, BBoxSectors centerZone, float theta)
+        {
             // Check if center zone contains Left
             if (centerZone.HasFlag(BBoxSectors.Left))
             {
@@ -996,10 +1430,8 @@ namespace SRcsharp.Library
             return (gap, minDistance);
         }
 
-        public (float,float) CalcAndAddProximities(List<SpatialRelation> result, SpatialObject subject, float centerDistance, float theta)
+        public (float,float) CalcAndAddProximities(List<SpatialRelation> result, SpatialObject subject, float gap, float minDistance, float centerDistance, float theta)
         {
-            var minDistance = 0.0f;
-            var gap = 0.0f;
             if (centerDistance < subject.CalcNearbyRadius() + CalcNearbyRadius())
             {
                 gap = centerDistance;
@@ -1384,6 +1816,36 @@ namespace SRcsharp.Library
             }
             return result;
         }
+
+        private float ComputeOverlap(float min, float max, float size)
+        {
+            // Compute overlap in one dimension (x, y, or z)
+            float overlap = size;
+            if (min < size / 2.0f + Adjustment.MaxGap && max > -size / 2.0f - Adjustment.MaxGap)
+            {
+                if (max < size / 2.0f && min > -size / 2.0f)
+                {
+                    overlap = max - min;
+                }
+                else
+                {
+                    if (min > -size / 2.0f - Adjustment.MaxGap)
+                    {
+                        overlap = Math.Abs(size / 2.0f - min);
+                    }
+                    else
+                    {
+                        overlap = Math.Abs(max + size / 2.0f);
+                    }
+                }
+            }
+            else
+            {
+                overlap = -1; // No overlap
+            }
+            return overlap;
+        }
+
 
         #region Visualization
 

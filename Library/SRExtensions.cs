@@ -72,5 +72,25 @@ namespace SRcsharp.Library
             }
         }
 
+
+        public static List<string> Keywords(this string str)
+        {
+            var scanner = new Scanner(str);
+            var keywords = new List<string>();
+            while (!scanner.IsAtEnd)
+            {
+                var result = scanner.ScanCharacters("abcdefghijklmnopqrstuvwxyz".ToCharArray());
+                if (result != null)
+                {
+                    if (!keywords.Contains(result))
+                    {
+                        keywords.Add(result);
+                    }
+                }
+                scanner.ScanUpToCharacters("abcdefghijklmnopqrstuvwxyz".ToCharArray());
+            }
+            return keywords;
+        }
+
     }
 }

@@ -90,6 +90,51 @@ namespace SRcsharp.Library
 
 		#endregion
 
+		#region Logging
+
+		private string _pipeline;
+
+		public string Pipeline
+		{
+			get { return _pipeline; }
+			set { _pipeline = value; }
+		}
+
+		private string _name;
+
+		public string Name
+		{
+			get { return _name; }
+			set { _name = value; }
+		}
+
+		private string _description;
+
+		public string Description
+		{
+			get { return _description; }
+			set { _description = value; }
+		}
+
+		private int _logCount;
+
+		public int LogCount
+		{
+			get { return _logCount; }
+			set { _logCount = value; }
+		}
+
+		private Uri? _logFolder;
+
+		public Uri? LogFolder
+		{
+			get { return _logFolder; }
+			set { _logFolder = value; }
+		}
+
+
+		#endregion
+
 		public List<SpatialRelation> RelationsWith(int objIdx, string predicate)
 		{
 			throw new NotImplementedException();

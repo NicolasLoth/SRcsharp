@@ -263,14 +263,14 @@ namespace SRcsharp.Library
         public enum SpatialPredicateAdjacency
         {
             Undefined = 0,
-            Leftside = 1 << 0,
-            Rightside = 1 << 1,
-            Ontop = 1 << 2,
+            LeftSide = 1 << 0,
+            RightSide = 1 << 1,
+            OnTop = 1 << 2,
             Beneath = 1 << 3,
-            Upperside = 1 << 4,
-            Lowerside = 1 << 5,
-            Frontside = 1 << 6,
-            Backside = 1 << 7
+            UpperSide = 1 << 4,
+            LowerSide = 1 << 5,
+            FrontSide = 1 << 6,
+            BackSide = 1 << 7
         }
 
         [Flags]
