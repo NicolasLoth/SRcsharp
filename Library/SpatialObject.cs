@@ -336,7 +336,7 @@ namespace SRcsharp.Library
             StringAttributes = LoadAttributes(new Type[] { typeof(string), typeof(Enum) });
         }
 
-        public SpatialObject(string id, SCNVector3 position, float width = 1.0f, float height = 1.0f, float depth = 1.0f, float angle = 0.0f, string label = "", float confidence = 0.0f)
+        public SpatialObject(string id, SCNVector3 position = SCNVector3(), float width = 1.0f, float height = 1.0f, float depth = 1.0f, float angle = 0.0f, string label = "", float confidence = 0.0f)
         {
             _id = id;
             _position = position;
