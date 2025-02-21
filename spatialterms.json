@@ -54,7 +54,7 @@
     "Reverse": "Above"
   },
   {
-    "Code": "Ontop",
+    "Code": "OnTop",
     "Predicate": "On Top",
     "Preposition": "Of",
     "Synonym": "At The Top",
@@ -68,37 +68,37 @@
     "Reverse": "On Top"
   },
   {
-    "Code": "Upperside",
+    "Code": "UpperSide",
     "Predicate": "At Upper Side",
     "Preposition": "Of",
     "Reverse": "At Lower Side"
   },
   {
-    "Code": "Lowerside",
+    "Code": "LowerSide",
     "Predicate": "At Lower Side",
     "Preposition": "Of",
     "Reverse": "At Upper Side"
   },
   {
-    "Code": "Leftside",
+    "Code": "LeftSide",
     "Predicate": "At Left Side",
     "Preposition": "Of",
     "Synonym": "At Left-Hand Side"
   },
   {
-    "Code": "Rightside",
+    "Code": "RightSide",
     "Predicate": "At Right Side",
     "Preposition": "Of",
     "Synonym": "At Right-Hand Side"
   },
   {
-    "Code": "Frontside",
+    "Code": "FrontSide",
     "Predicate": "At Front Side",
     "Preposition": "Of",
     "Synonym": "At Forefront"
   },
   {
-    "Code": "Backside",
+    "Code": "BackSide",
     "Predicate": "At Back Side",
     "Preposition": "Of",
     "Synonym": "At Rear Side"

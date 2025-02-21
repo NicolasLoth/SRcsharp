@@ -66,6 +66,8 @@ namespace SRcsharp.Library
 			}
 		}
 
+		public ObjectConfidence() { }
+
 
         public ObjectConfidence(float pose, float dimension)
 		{

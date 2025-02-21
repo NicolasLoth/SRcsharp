@@ -345,6 +345,7 @@ namespace SRcsharp.Library
             _depth = depth;
             _angle = angle;
             _label = label;
+            _confidence = new ObjectConfidence();
             _confidence.Spatial = confidence;
             _created = DateTime.Now;
             _updated = DateTime.Now;

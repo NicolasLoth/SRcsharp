@@ -41,42 +41,42 @@ namespace SRcsharp.Library
 
             if (operation.StartsWith("filter("))
             {
-                string condition = operation.Substring(0, endIdx - 7);
+                string condition = operation.Substring(7, endIdx - 7);
                 Filter(condition);
             }
             else if (operation.StartsWith("pick("))
             {
-                string relations = operation.Substring(0, endIdx - 5);
+                string relations = operation.Substring(5, endIdx - 5);
                 Pick(relations);
             }
             else if (operation.StartsWith("select("))
             {
-                string terms = operation.Substring(0, endIdx - 7);
+                string terms = operation.Substring(7, endIdx - 7);
                 Select(terms);
             }
             else if (operation.StartsWith("sort("))
             {
-                string attribute = operation.Substring(0, endIdx - 5);
+                string attribute = operation.Substring(5, endIdx - 5);
                 Sort(attribute);
             }
             else if (operation.StartsWith("slice("))
             {
-                string range = operation.Substring(0, endIdx - 6);
+                string range = operation.Substring(6, endIdx - 6);
                 Slice(range);
             }
             else if (operation.StartsWith("produce("))
             {
-                string terms = operation.Substring(0, endIdx - 8);
+                string terms = operation.Substring(8, endIdx - 8);
                 Produce(terms);
             }
             else if (operation.StartsWith("calc("))
             {
-                string assignments = operation.Substring(0, endIdx - 5);
+                string assignments = operation.Substring(5, endIdx - 5);
                 Calc(assignments);
             }
             else if (operation.StartsWith("map("))
             {
-                string assignments = operation.Substring(0, endIdx - 4);
+                string assignments = operation.Substring(4, endIdx - 4);
                 Map(assignments);
             }
         }
@@ -96,7 +96,7 @@ namespace SRcsharp.Library
 
         private List<int> FilterInternal(List<int> indices, string condition)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
 
             var adds = new List<int>();
             var subs = condition.Split(FilterOperationLiterals, StringSplitOptions.RemoveEmptyEntries);
