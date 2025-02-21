@@ -40,7 +40,8 @@ namespace SRcsharp.Library
 
         public float Length { get { return _rawValue.Length(); } }
 
-
+        public static SCNVector3 Zero { get { var vec = new SCNVector3(0,0,0); return vec; } }
+        public static SCNVector3 One { get { var vec = new SCNVector3(1,1,1); return vec; } }
 
         public static SCNVector3[] Nearest(SCNVector3[] pts)
         {

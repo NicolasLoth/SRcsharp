@@ -72,7 +72,7 @@ namespace SRcsharp.Library
 			_angle = angle;
 		}
 
-		public string Desc
+		public string Description
         {
             get 
 			{
@@ -107,6 +107,11 @@ namespace SRcsharp.Library
 
 			} 
 		}
+
+        public override string ToString()
+        {
+			return string.Format("{0} {1} {2} | {3:F1} {4:F1}", _subject.Id, _predicate, _object.Id, _delta, Yaw);
+        }
 
     }
 }

@@ -9,24 +9,30 @@ namespace SRcsharp.Library
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using static SRcsharp.Library.SpatialInference;
 
     public class SpatialInference
     {
-        private int[] _input;
-        private int[] _output;
+        public enum FilterOperations { None, Equals, DoubleEquals, Smaller, Greater, SmallerEquals, GreaterEquals, NotEquals, NotEquals2 }; //Ternary operations
+        public readonly string[] FilterOperationLiterals = new string[] { "=", "==", "<", ">", "<=", ">=", "!=", "<>" };
+        public enum BooleanOperations { None, AND, OR, XOR, NOT};
+        public readonly string[] BooleanOperationLiterals = new string[] { "AND", "OR", "XOR","NOT"};
+
+        private List<int> _input;
+        private List<int> _output;
         private string _operation;
         private bool _succeeded;
         private string _error;
         private SpatialReasoner _fact;
 
-        public int[] Input { get => _input; set => _input = value; }
-        public int[] Output { get => _output; set => _output = value; }
+        public List<int> Input { get => _input; set => _input = value; }
+        public List<int> Output { get => _output; set => _output = value; }
         public string Operation { get => _operation; set => _operation = value; }
         public bool Succeeded { get => _succeeded; set => _succeeded = value; }
         public string Error { get => _error; set => _error = value; }
         public SpatialReasoner Fact { get => _fact; set => _fact = value; }
 
-        public SpatialInference(int[] input, string operation, SpatialReasoner fact)
+        public SpatialInference(List<int> input, string operation, SpatialReasoner fact)
         {
             _input = input;
             _operation = operation;
@@ -85,18 +91,77 @@ namespace SRcsharp.Library
 
         public void Filter(string condition)
         {
-            var predicate = AttributePredicate(condition);
-            var baseObjects = Fact.Base["objects"] as object[];
+            FilterInternal(Input,condition).ForEach(i => Add(i));
+        }
 
-            foreach (var i in Input)
+        private List<int> FilterInternal(List<int> indices, string condition)
+        {
+            throw new NotImplementedException();
+
+            var adds = new List<int>();
+            var subs = condition.Split(FilterOperationLiterals, StringSplitOptions.RemoveEmptyEntries);
+            var propertyString = subs[0];
+            var valueString = subs[1];
+            var op = FilterOperations.None;
+            for (int i = 0; i < FilterOperationLiterals.Length; i++)
             {
-                bool result = predicate.Invoke(baseObjects[i]);
+                if (condition.Contains(FilterOperationLiterals[i]))
+                    op = (FilterOperations)i + 1;
+            }
+            var boolOp = BooleanOperations.None;
+            for (int i = 0; i < BooleanOperationLiterals.Length; i++)
+            {
+                if (condition.Contains(BooleanOperationLiterals[i]))
+                    boolOp = (BooleanOperations)i + 1;
+            }
+
+            var result = false;
+            foreach (var i in indices)
+            {
+                var so = Fact.BaseObjects[i];
+                if (op != FilterOperations.None)
+                {
+                    switch (op)
+                    {
+                        case FilterOperations.Equals:
+                        case FilterOperations.DoubleEquals:
+                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) == 0);
+                            break;
+                        case FilterOperations.Smaller:
+                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) < 0);
+                            break;
+                        case FilterOperations.Greater:
+                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) > 0);
+                            break;
+                        case FilterOperations.SmallerEquals:
+                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) <= 0);
+                            break;
+                        case FilterOperations.GreaterEquals:
+                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) >= 0);
+                            break;
+                        case FilterOperations.NotEquals:
+                        case FilterOperations.NotEquals2:
+                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) != 0);
+                            break;
+                    }
+                }
+                if (boolOp != BooleanOperations.None)
+                {
+                    switch (boolOp)
+                    {
+                        case BooleanOperations.AND:
+                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) == 0);
+                            break;
+                    }
+                }
                 if (result)
                 {
-                    Add(i);
+                    adds.Add(i);
                 }
             }
+
             Succeeded = true;
+            return adds;
         }
 
         public void Pick(string relations)
@@ -112,17 +177,16 @@ namespace SRcsharp.Library
                     {
                         foreach (var predicate in predicates)
                         {
-                            if (Fact.Does(Fact.Objects[j], predicate, i))
+                            if (Fact.DoesSubjectHasRelationOfPredWithObject(Fact.Objects[j], predicate, i))
                             {
-                                cond = cond.Replace(predicate, "TRUEPREDICATE");
+                                cond = cond.Replace(predicate, "true");
                             }
                             else
                             {
-                                cond = cond.Replace(predicate, "FALSEPREDICATE");
+                                cond = cond.Replace(predicate, "false");
                             }
                         }
-
-                        bool result = NSPredicate.Format(cond).EvaluateWith(null);
+                        bool result = Evaluator.XEval(cond);
                         if (result)
                         {
                             Add(j);
@@ -144,7 +208,7 @@ namespace SRcsharp.Library
             string conditions = list[1];
             string relations = list[0];
             var predicates = relations.Keywords();
-            var baseObjects = Fact.Base["objects"] as List<object>;
+            var baseObjects = Fact.BaseObjects;
 
             foreach (var i in Input)
             {
@@ -155,21 +219,20 @@ namespace SRcsharp.Library
                     {
                         foreach (var predicate in predicates)
                         {
-                            if (Fact.Does(Fact.Objects[j], predicate, i))
+                            if (Fact.DoesSubjectHasRelationOfPredWithObject(Fact.Objects[j], predicate, i))
                             {
-                                cond = cond.Replace(predicate, "TRUEPREDICATE");
+                                cond = cond.Replace(predicate, "true");
                             }
                             else
                             {
-                                cond = cond.Replace(predicate, "FALSEPREDICATE");
+                                cond = cond.Replace(predicate, "false");
                             }
                         }
 
-                        bool result = NSPredicate.Format(cond).EvaluateWith(null);
+                        bool result = Evaluator.XEval(cond);
                         if (result)
                         {
-                            var attrPredicate = SpatialInference.AttributePredicate(conditions);
-                            bool result2 = attrPredicate.EvaluateWith(baseObjects[j]);
+                            var result2 = FilterInternal(new List<int>() { j }, conditions).Any();
                             if (result2)
                             {
                                 Add(i);
@@ -188,20 +251,16 @@ namespace SRcsharp.Library
 
         public void Map(string assignments)
         {
+            throw new NotImplementedException();
+
             var list = assignments.Split(';').Select(a => a.Trim()).ToArray();
-            var baseObjects = Fact.Base["objects"] as List<object>;
+            var baseObjects = Fact.BaseObjects;
 
             foreach (var i in Input)
             {
                 var dict = new Dictionary<string, object>();
 
-                if (Fact.Base.ContainsKey("data"))
-                {
-                    foreach (var pair in Fact.Base["data"] as Dictionary<string, object>)
-                    {
-                        dict[pair.Key] = pair.Value;
-                    }
-                }
+
 
                 foreach (var assignment in list)
                 {
@@ -210,13 +269,13 @@ namespace SRcsharp.Library
                     {
                         var key = kv[0].Trim();
                         var expr = kv[1].Trim();
-                        var expression = new NSExpression(expr);
-                        var value = expression.ExpressionValueWith(baseObjects[i], null);
+                        //var expression = new NSExpression(expr);
+                        //var value = expression.ExpressionValueWith(baseObjects[i], null);
 
-                        if (value != null)
-                        {
-                            dict[key] = value;
-                        }
+                        //if (value != null)
+                        //{
+                        //    dict[key] = value;
+                        //}
                     }
                 }
 
@@ -229,6 +288,8 @@ namespace SRcsharp.Library
 
         public void Calc(string assignments)
         {
+            throw new NotImplementedException();
+
             var list = assignments.Split(';').Select(a => a.Trim()).ToArray();
 
             foreach (var assignment in list)
@@ -238,13 +299,13 @@ namespace SRcsharp.Library
                 {
                     var key = kv[0].Trim();
                     var expr = kv[1].Trim();
-                    var expression = new NSExpression(expr);
-                    var value = expression.ExpressionValueWith(Fact.Base, null);
+                    //var expression = new NSExpression(expr);
+                    //var value = expression.ExpressionValueWith(Fact.Base, null);
 
-                    if (value != null)
-                    {
-                        Fact.SetData(key, value);
-                    }
+                    //if (value != null)
+                    //{
+                    //    Fact.SetData(key, value);
+                    //}
                 }
             }
             Output = Input;
@@ -284,7 +345,7 @@ namespace SRcsharp.Library
                 (lower, upper) = (upper, lower);
             }
 
-            var idxRange = new Range<int>(lower, upper);
+            var idxRange = new Range(lower, upper);
             Console.WriteLine(idxRange);
 
             Output = Input.GetRange(lower, upper - lower + 1);
@@ -386,11 +447,11 @@ namespace SRcsharp.Library
 
             if (ascending)
             {
-                sortedObjects = inputObjects.OrderBy(o => o.RelationValue(attribute, preIndices)).ToList();
+                sortedObjects = inputObjects.OrderBy(o => o.CalcRelationValue(attribute, preIndices)).ToList();
             }
             else
             {
-                sortedObjects = inputObjects.OrderByDescending(o => o.RelationValue(attribute, preIndices)).ToList();
+                sortedObjects = inputObjects.OrderByDescending(o => o.CalcRelationValue(attribute, preIndices)).ToList();
             }
 
             foreach (var obj in sortedObjects)
@@ -431,7 +492,7 @@ namespace SRcsharp.Library
                 };
         }
 
-        public static Predicate<string> AttributePredicate(string condition)
+        public static string AttributePredicate(string condition)
         {
             string cond = condition.Trim();
 
@@ -457,7 +518,7 @@ namespace SRcsharp.Library
                 }
             }
 
-            return new Predicate<string>((s) => s == cond);
+            return cond;
         }
 
 

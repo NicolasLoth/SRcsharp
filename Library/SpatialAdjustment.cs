@@ -7,7 +7,7 @@ using static SRcsharp.Library.SREnums;
 
 namespace SRcsharp.Library
 {
-    public struct SpatialAdjustment
+    public class SpatialAdjustment
     {
 
 		private float _maxGap = 0.02f;
@@ -81,12 +81,12 @@ namespace SRcsharp.Library
 			set { _longRatio = value; }
 		}
 
-		private float _thinRation = 10.0f;
+		private float _thinRatio = 10.0f;
 
-		public float ThinRation
+		public float ThinRatio
 		{
-			get { return _thinRation; }
-			set { _thinRation = value; }
+			get { return _thinRatio; }
+			set { _thinRatio = value; }
 		}
 
 		public double Yaw { 

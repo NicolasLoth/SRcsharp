@@ -105,12 +105,17 @@ namespace SRcsharp.Library
             }
         }
 
-        public bool IsSymmetric(string pred)
+        public bool IsSymmetric(SpatialPredicate code)
+        {
+            return _terms.Any(term => term.Code == code && term.Predicate == term.Reverse);
+        }
+
+        public bool IsInverse(string pred)
         {
             throw new NotImplementedException();
         }
 
-        public bool IsInverse(string pred)
+        public bool IsNegation(string pred)
         {
             throw new NotImplementedException();
         }

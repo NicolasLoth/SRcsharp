@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SRcsharp.Library
 {
-    public struct ObjectConfidence
+    public class ObjectConfidence
     {
 
 		private float _pose = 0.0f;

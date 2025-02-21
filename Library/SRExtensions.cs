@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -15,6 +16,11 @@ namespace SRcsharp.Library
         {
             return Enum.GetValues(e.GetType()).Cast<Enum>().Where(e.HasFlag);
         }
+        public static string[] GetFlagNames(this Enum e)
+        {
+            return e.ToString().Split(new[] { ", " }, StringSplitOptions.None);
+        }
+
 
         public static SCNVector3 ToSNCVector3(this Vector3 vector)
         {

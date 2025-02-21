@@ -336,7 +336,7 @@ namespace SRcsharp.Library
             StringAttributes = LoadAttributes(new Type[] { typeof(string), typeof(Enum) });
         }
 
-        public SpatialObject(string id, SCNVector3 position = SCNVector3(), float width = 1.0f, float height = 1.0f, float depth = 1.0f, float angle = 0.0f, string label = "", float confidence = 0.0f)
+        public SpatialObject(string id, SCNVector3 position = null, float width = 1.0f, float height = 1.0f, float depth = 1.0f, float angle = 0.0f, string label = "", float confidence = 0.0f)
         {
             _id = id;
             _position = position;
@@ -474,7 +474,26 @@ namespace SRcsharp.Library
         
         public Dictionary<string,object> AsDict()
         {
-            throw new NotImplementedException();
+            var res = new Dictionary<string,object>();
+            foreach(var pi in BooleanAttributes.Values)
+            {
+                res.Add(pi.Name, pi.GetValue(this));
+            }
+            foreach (var pi in NumericAttributes.Values)
+            {
+                res.Add(pi.Name, pi.GetValue(this));
+            }
+            foreach (var pi in StringAttributes.Values)
+            {
+                res.Add(pi.Name, pi.GetValue(this));
+            }
+
+            if(_data != null)
+            {
+                _data.ToList().ForEach(x => res.Add(x.Key, x.Value));
+            } 
+
+            return res;
         }
 
         public Dictionary<string, object> ToAny()
@@ -484,7 +503,89 @@ namespace SRcsharp.Library
 
         public void FromAny(Dictionary<string, object> input)
         {
-            throw new NotImplementedException();
+            string id = input.ContainsKey("id") ? input["id"] as string : "";
+            if (!string.IsNullOrEmpty(id))
+            {
+                if (this.Id != id)
+                {
+                    Console.WriteLine("import/update from another id!");
+                }
+                this.Id = id;
+            }
+
+            float? number = 0.0f;
+            SCNVector3 pos = new SCNVector3();
+
+            var list = input.ContainsKey("position") ? input["position"] as List<float> : null;
+            if (list != null && list.Count == 3)
+            {
+                pos.X = (float)list[0];
+                pos.Y = (float)list[1];
+                pos.Z = (float)list[2];
+            }
+            else
+            {
+                number = input.ContainsKey("x") ? float.Parse(input["x"].ToString()) : null;
+                float x = number != null ? number.Value : this.Position.X;
+
+                number = input.ContainsKey("y") ? float.Parse(input["y"].ToString()) : null;
+                float y = number != null ? number.Value : this.Position.Y;
+
+                number = input.ContainsKey("z") ? float.Parse(input["z"].ToString()) : null;
+                float z = number != null ? number.Value : this.Position.Z;
+
+                pos.X = x;
+                pos.Y = y;
+                pos.Z = z;
+            }
+            
+            Position = pos;
+
+            number = input.ContainsKey("width") ? float.Parse(input["width"].ToString()) : input.ContainsKey("w") ? float.Parse(input["w"].ToString()) : null;
+            this.Width = number != null ? number.Value : this.Width;
+
+            number = input.ContainsKey("height") ? float.Parse(input["height"].ToString()) : input.ContainsKey("h") ? float.Parse(input["h"].ToString()) : null;
+            this.Height = number != null ? number.Value : this.Height;
+
+            number = input.ContainsKey("depth") ? float.Parse(input["depth"].ToString()) : input.ContainsKey("d") ? float.Parse(input["d"].ToString()) : null;
+            this.Depth = number != null ? number.Value : this.Depth;
+
+            number = input.ContainsKey("angle") ? float.Parse(input["angle"].ToString()) : null;
+            this.Angle = number != null ? number.Value : this.Angle;
+
+            this.Label = input.ContainsKey("label") ? input["label"] as string : this.Label;
+            this.Type = input.ContainsKey("type") ? input["type"] as string : this.Type;
+            this.Supertype = input.ContainsKey("supertype") ? input["supertype"] as string : this.Supertype;
+
+            number = input.ContainsKey("confidence") ? float.Parse(input["confidence"].ToString()) : null;
+            float confidence = number != null ? number.Value : this.Confidence.Value;
+            this.Confidence.Value = confidence;
+
+            string cause = input.ContainsKey("cause") ? input["cause"] as string : this.Cause.ToString();
+            this.Cause = Enum.Parse<ObjectCause>(cause);
+
+            string existence = input.ContainsKey("existence") ? input["existence"] as string : this.Existence.ToString();
+            this.Existence = Enum.Parse<SpatialExistence>(existence);
+
+            this.Immobile = input.ContainsKey("existence") ? (bool)input["existence"] : this.Immobile;
+
+            string shape = input.ContainsKey("shape") ? input["shape"] as string : this.Shape.ToString();
+            this.Shape = Enum.Parse<ObjectShape>(shape);
+
+            this.Look = input.ContainsKey("look") ? input["look"] as string : this.Look;
+
+            foreach (var dict in input)
+            {
+                string key = dict.Key;
+                if (!SpatialObject.StringAttributes.ContainsKey(key) &&
+                    !SpatialObject.NumericAttributes.ContainsKey(key) &&
+                    !SpatialObject.BooleanAttributes.ContainsKey(key))
+                {
+                    SetData(key, dict.Value);
+                }
+            }
+
+            this.Updated = DateTime.Now;
         }
 
         public string Describe()
@@ -947,7 +1048,7 @@ namespace SRcsharp.Library
 
         public void CalcAndAddVisibilities(List<SpatialRelation> result, SpatialObject subject, float centerDistance)
         {
-            if(_context == null || _context.Deduce.HasFlag(SpatialPredicatedCategories.Visbility))
+            if(_context == null || _context.DeduceCategories.HasFlag(SpatialPredicatedCategories.Visbility))
             {
                 if (_type == "Person" || (_cause == ObjectCause.SelfTracked && _existence == SpatialExistence.Real))
                 {
@@ -1096,7 +1197,7 @@ namespace SRcsharp.Library
                 isDisjoint = false;
                 SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Inside), this, centerDistance, theta);
                 result.Add(relation);
-                if(_context == null || _context.Deduce.HasFlag(SpatialPredicatedCategories.Connectivity))
+                if(_context == null || _context.DeduceCategories.HasFlag(SpatialPredicatedCategories.Connectivity))
                 {
                     relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateContacts>((int)SpatialPredicateContacts.In), this, centerDistance, theta);
                     result.Add(relation);
@@ -1186,7 +1287,7 @@ namespace SRcsharp.Library
                             {
                                 SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Touching), this, gap, theta);
                                 result.Add(relation);
-                                if (!isConnected && (_context == null || _context.Deduce.HasFlag(SpatialPredicatedCategories.Connectivity)))
+                                if (!isConnected && (_context == null || _context.DeduceCategories.HasFlag(SpatialPredicatedCategories.Connectivity)))
                                 {
                                     relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateContacts>((int)SpatialPredicateContacts.By), this, gap, theta);
                                     result.Add(relation);
@@ -1209,7 +1310,7 @@ namespace SRcsharp.Library
                                     {
                                         SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Meeting), this, Math.Max(xlap, zlap), theta);
                                         result.Add(relation);
-                                        if (!isConnected && (_context == null || _context.Deduce.HasFlag(SpatialPredicatedCategories.Connectivity)) && subject.Volume < Volume)
+                                        if (!isConnected && (_context == null || _context.DeduceCategories.HasFlag(SpatialPredicatedCategories.Connectivity)) && subject.Volume < Volume)
                                         {
                                             relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateContacts>((int)SpatialPredicateContacts.At), this, gap, theta);
                                             result.Add(relation);
@@ -1220,7 +1321,7 @@ namespace SRcsharp.Library
                                     {
                                         SpatialRelation relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Touching), this, gap, theta);
                                         result.Add(relation);
-                                        if (!isConnected && (_context == null || _context.Deduce.HasFlag(SpatialPredicatedCategories.Connectivity)))
+                                        if (!isConnected && (_context == null || _context.DeduceCategories.HasFlag(SpatialPredicatedCategories.Connectivity)))
                                         {
                                             relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateContacts>((int)SpatialPredicateContacts.By), this, gap, theta);
                                             result.Add(relation);
@@ -1311,7 +1412,7 @@ namespace SRcsharp.Library
                         gap = minDistance;
                         var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.OnTop), this, gap, theta);
                         result.Add(relation);
-                        if(_context == null || _context.Deduce.HasFlag(SpatialPredicatedCategories.Connectivity))
+                        if(_context == null || _context.DeduceCategories.HasFlag(SpatialPredicatedCategories.Connectivity))
                         {
                             relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateContacts>((int)SpatialPredicateContacts.On), this, gap, theta);
                             result.Add(relation);
@@ -1324,7 +1425,7 @@ namespace SRcsharp.Library
                 {
                     foreach (var pt in localPts)
                     {
-                        minDistance = Math.Min(minDistance, -pt.y);
+                        minDistance = Math.Min(minDistance, -pt.Y);
                     }
                     if (minDistance >= 0.0f)
                     {
@@ -1752,25 +1853,25 @@ namespace SRcsharp.Library
             var result = new List<SpatialRelation>();
 
             // Topology condition
-            if (topology || (_context!= null && _context.Deduce.HasFlag(SpatialPredicatedCategories.Topology)) || (_context != null && _context.Deduce.HasFlag(SpatialPredicatedCategories.Connectivity)))
+            if (topology || (_context!= null && _context.DeduceCategories.HasFlag(SpatialPredicatedCategories.Topology)) || (_context != null && _context.DeduceCategories.HasFlag(SpatialPredicatedCategories.Connectivity)))
             {
                 result.AddRange(CalcTopologies(subject));
             }
 
             // Similarity condition
-            if (similarity || (_context != null && _context.Deduce.HasFlag(SpatialPredicatedCategories.Similarity)))
+            if (similarity || (_context != null && _context.DeduceCategories.HasFlag(SpatialPredicatedCategories.Similarity)))
             {
                 result.AddRange(CalcSimilarities(subject));
             }
 
             // Comparison condition
-            if (comparison || (_context != null && _context.Deduce.HasFlag(SpatialPredicatedCategories.Comparability)))
+            if (comparison || (_context != null && _context.DeduceCategories.HasFlag(SpatialPredicatedCategories.Comparability)))
             {
                 result.AddRange(CalcComparisons(subject));
             }
 
             // Visibility condition
-            if (_context?.Observer != null && (_context != null && _context.Deduce.HasFlag(SpatialPredicatedCategories.Visbility)))
+            if (_context?.Observer != null && (_context != null && _context.DeduceCategories.HasFlag(SpatialPredicatedCategories.Visbility)))
             {
                 result.AddRange(CalcAsSeen(subject, _context.Observer));
             }
