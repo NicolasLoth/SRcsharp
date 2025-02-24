@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -28,13 +29,13 @@ namespace SRcsharp.Library
             set { _allPredicateEnums = value; }
         }
 
-        private List<Enum> _allPredicateValues;
+        //private List<Enum> _allPredicateValues;
 
-        public List<Enum> AllPredicateValues
-        {
-            get { return _allPredicateValues; }
-            set { _allPredicateValues = value; }
-        }
+        //public List<Enum> AllPredicateValues
+        //{
+        //    get { return _allPredicateValues; }
+        //    set { _allPredicateValues = value; }
+        //}
 
         static SpatialPredicate()
         {
@@ -57,8 +58,8 @@ namespace SRcsharp.Library
             Visibility = SpatialPredicateVisibility.Undefined;
             Geography = SpatialPredicateGeography.Undefined;
 
-            _allPredicateValues = new List<Enum>();
-            LoadAllPredicateValues();
+            //_allPredicateValues = new List<Enum>();
+            //LoadAllPredicateValues();
         }
 
         private static void LoadAllPredicateNames()
@@ -74,21 +75,39 @@ namespace SRcsharp.Library
             _allPredicateEnums = allEnums.ToList();
         }
 
-        private void LoadAllPredicateValues()
+
+
+        public List<Enum> AllPredicateValues
         {
-            _allPredicateValues = new List<Enum>
+            get
             {
-                Proximity,
-                Directionality,
-                Adjacency,
-                Orientations,
-                Assembly,
-                Contacts,
-                Comparability,
-                Similarity,
-                Visibility,
-                Geography
-            };
+                return new List<Enum>
+                {
+                    Proximity,
+                    Directionality,
+                    Adjacency,
+                    Orientations,
+                    Assembly,
+                    Contacts,
+                    Comparability,
+                    Similarity,
+                    Visibility,
+                    Geography
+                };
+            }
+            //_allPredicateValues = new List<Type>
+            //{
+            //    typeof(SpatialPredicateProximity),
+            //    typeof(SpatialPredicateDirectionality),
+            //    typeof(SpatialPredicateAdjacency),
+            //    typeof(SpatialPredicateOrientations),
+            //    typeof(SpatialPredicateAssembly),
+            //    typeof(SpatialPredicateContacts),
+            //    typeof(SpatialPredicateComparability),
+            //    typeof(SpatialPredicateSimilarity),
+            //    typeof(SpatialPredicateVisibility),
+            //    typeof(SpatialPredicateGeography)
+            //};
         }
 
         public static bool operator ==(SpatialPredicate pred1, SpatialPredicate pred2)
@@ -114,7 +133,7 @@ namespace SRcsharp.Library
 
         public static bool IsDefined(SpatialPredicate pred)
         {
-            return pred.AllPredicateValues.All(e => Convert.ToInt32(e) != 0);
+            return pred.AllPredicateValues.Any(e => Convert.ToInt32(e) != 0);
             //return
             //    pred.Proximity != 0 ||
             //    pred.Directionality != 0 ||
@@ -128,6 +147,11 @@ namespace SRcsharp.Library
             //    pred.Geography != 0;
         }
 
+        public bool IsDefined()
+        {
+            return IsDefined(this);
+        }
+
         public static bool IsMultiDefined(SpatialPredicate pred)
         {
             return pred.AllPredicateValues.Where(e => Convert.ToInt32(e) != 0).Count() > 1;
@@ -136,22 +160,22 @@ namespace SRcsharp.Library
 
         public List<string> GetDefinedPredicateValueNames()
         {
-            return _allPredicateValues.SelectMany(e => e.GetFlagNames()).ToList();
+            return AllPredicateValues.Where(e=> Convert.ToInt32(e) != 0).SelectMany(e => e.GetFlagNames()).ToList();
         }
 
-        public string GetDefinedPredicateValueName(bool throwErrorIfMultiDefined = false)
+        public string? GetDefinedPredicateValueName(bool throwErrorIfMultiDefined = false)
         {
             var values = GetDefinedPredicateValueNames();
             if (throwErrorIfMultiDefined && values.Count() > 1)
                 throw new Exception("Error: Multi defined Spatial Predicate");
-            return values.First();
+            return values.FirstOrDefault();
         }
 
-        public string RawValue { get { return GetDefinedPredicateValueName(true); } }
+        public string? RawValue { get { return GetDefinedPredicateValueName(true); } }
 
         public override string ToString()
         {
-            return RawValue;
+            return string.Join('|', RawValue);
         }
 
         public bool IsDefined(SpatialPredicateTypes type)

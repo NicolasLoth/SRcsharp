@@ -101,7 +101,7 @@ namespace SRcsharp.Library
 				{
 					str = str + _object.Id;
 				}
-				str = str + string.Format("{0} 𝛥:{1:F1}  𝜶:{2:F1}°)", _predicate.ToString(), _delta, Yaw);
+				str = str + string.Format("{0}  𝛥:{1:F1}  𝜶:{2:F1}°)", _predicate.ToString(), _delta, Yaw);
 				return str;
 
 

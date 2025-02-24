@@ -26,7 +26,7 @@ namespace SRcsharp.Library
         public string ScanCharacters(char[] characters)
         {
             var result = string.Empty;
-            while(characters.Contains(_word[_currentIndex]))
+            while(_word.Length > _currentIndex && characters.Contains(_word[_currentIndex]))
             {
                 result += _word[_currentIndex];
                 _currentIndex++;
@@ -37,7 +37,7 @@ namespace SRcsharp.Library
 
         public void ScanUpToCharacters(char[] characters)
         {
-            while (!characters.Contains(_word[_currentIndex]))
+            while (_word.Length > _currentIndex && !characters.Contains(_word[_currentIndex]))
             {
                 _currentIndex++;
             }

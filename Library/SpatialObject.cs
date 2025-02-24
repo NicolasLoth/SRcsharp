@@ -309,7 +309,13 @@ namespace SRcsharp.Library
         [SpatialObjectProperty]
         public double UpdateInterval { get { return DateTime.Now.Subtract(_updated).TotalSeconds; } }
 
-        public SpatialAdjustment Adjustment { get { return _context != null ? _context.Adjustment : SpatialAdjustment.DefaultAdjustment; } }
+        public SpatialAdjustment Adjustment 
+        { 
+            get 
+            { 
+                return _context != null ? _context.Adjustment : SpatialAdjustment.DefaultAdjustment; 
+            } 
+        }
 
         #endregion
 
@@ -504,7 +510,7 @@ namespace SRcsharp.Library
 
         public void FromAny(Dictionary<string, object> input)
         {
-            string id = input.ContainsKey("id") ? input["id"] as string : "";
+            string id = input.ContainsKey("Id") ? input["Id"] as string : "";
             if (!string.IsNullOrEmpty(id))
             {
                 if (this.Id != id)
@@ -517,7 +523,10 @@ namespace SRcsharp.Library
             float? number = 0.0f;
             SCNVector3 pos = new SCNVector3();
 
-            var list = input.ContainsKey("position") ? input["position"] as List<float> : null;
+            if (_position == null)
+                _position = new SCNVector3();
+
+            var list = input.ContainsKey("Position") ? input["Position"] as List<float> : null;
             if (list != null && list.Count == 3)
             {
                 pos.X = (float)list[0];
@@ -526,14 +535,14 @@ namespace SRcsharp.Library
             }
             else
             {
-                number = input.ContainsKey("x") ? float.Parse(input["x"].ToString()) : null;
-                float x = number != null ? number.Value : this.Position.X;
+                var x = input.ContainsKey("X") ? float.Parse(input["X"].ToString()) : this.Position.X;
+                //float x = number != null ? number?.Value : this.Position.X;
 
-                number = input.ContainsKey("y") ? float.Parse(input["y"].ToString()) : null;
-                float y = number != null ? number.Value : this.Position.Y;
+                var y = input.ContainsKey("Y") ? float.Parse(input["Y"].ToString()) : this.Position.Y;
+                //float y = number != null ? number?.Value : this.Position.Y;
 
-                number = input.ContainsKey("z") ? float.Parse(input["z"].ToString()) : null;
-                float z = number != null ? number.Value : this.Position.Z;
+                var z = input.ContainsKey("Z") ? float.Parse(input["Z"].ToString()) : this.Position.Z;
+                //float z = number != null ? number?.Value : this.Position.Z;
 
                 pos.X = x;
                 pos.Y = y;
@@ -542,38 +551,38 @@ namespace SRcsharp.Library
             
             Position = pos;
 
-            number = input.ContainsKey("width") ? float.Parse(input["width"].ToString()) : input.ContainsKey("w") ? float.Parse(input["w"].ToString()) : null;
+            number = input.ContainsKey("Width") ? float.Parse(input["Width"].ToString()) : input.ContainsKey("W") ? float.Parse(input["W"].ToString()) : null;
             this.Width = number != null ? number.Value : this.Width;
 
-            number = input.ContainsKey("height") ? float.Parse(input["height"].ToString()) : input.ContainsKey("h") ? float.Parse(input["h"].ToString()) : null;
+            number = input.ContainsKey("Height") ? float.Parse(input["Height"].ToString()) : input.ContainsKey("H") ? float.Parse(input["H"].ToString()) : null;
             this.Height = number != null ? number.Value : this.Height;
 
-            number = input.ContainsKey("depth") ? float.Parse(input["depth"].ToString()) : input.ContainsKey("d") ? float.Parse(input["d"].ToString()) : null;
+            number = input.ContainsKey("Depth") ? float.Parse(input["Depth"].ToString()) : input.ContainsKey("D") ? float.Parse(input["D"].ToString()) : null;
             this.Depth = number != null ? number.Value : this.Depth;
 
-            number = input.ContainsKey("angle") ? float.Parse(input["angle"].ToString()) : null;
+            number = input.ContainsKey("Angle") ? float.Parse(input["Angle"].ToString()) : null;
             this.Angle = number != null ? number.Value : this.Angle;
 
-            this.Label = input.ContainsKey("label") ? input["label"] as string : this.Label;
-            this.Type = input.ContainsKey("type") ? input["type"] as string : this.Type;
-            this.Supertype = input.ContainsKey("supertype") ? input["supertype"] as string : this.Supertype;
+            this.Label = input.ContainsKey("Label") ? input["Label"] as string : this.Label;
+            this.Type = input.ContainsKey("Type") ? input["Type"] as string : this.Type;
+            this.Supertype = input.ContainsKey("Supertype") ? input["Supertype"] as string : this.Supertype;
 
-            number = input.ContainsKey("confidence") ? float.Parse(input["confidence"].ToString()) : null;
+            number = input.ContainsKey("Confidence") ? float.Parse(input["Confidence"].ToString()) : null;
             float confidence = number != null ? number.Value : this.Confidence.Value;
             this.Confidence.Value = confidence;
 
-            string cause = input.ContainsKey("cause") ? input["cause"] as string : this.Cause.ToString();
+            string cause = input.ContainsKey("Cause") ? input["Cause"] as string : this.Cause.ToString();
             this.Cause = Enum.Parse<ObjectCause>(cause);
 
-            string existence = input.ContainsKey("existence") ? input["existence"] as string : this.Existence.ToString();
+            string existence = input.ContainsKey("Existence") ? input["Existence"] as string : this.Existence.ToString();
             this.Existence = Enum.Parse<SpatialExistence>(existence);
 
-            this.Immobile = input.ContainsKey("existence") ? (bool)input["existence"] : this.Immobile;
+            this.Immobile = input.ContainsKey("Existence") ? (bool)input["Existence"] : this.Immobile;
 
-            string shape = input.ContainsKey("shape") ? input["shape"] as string : this.Shape.ToString();
+            string shape = input.ContainsKey("Shape") ? input["Shape"] as string : this.Shape.ToString();
             this.Shape = Enum.Parse<ObjectShape>(shape);
 
-            this.Look = input.ContainsKey("look") ? input["look"] as string : this.Look;
+            this.Look = input.ContainsKey("Look") ? input["Look"] as string : this.Look;
 
             foreach (var dict in input)
             {
@@ -589,6 +598,11 @@ namespace SRcsharp.Library
             this.Updated = DateTime.Now;
         }
 
+        public override string ToString()
+        {
+            return "SO: "+Id;
+        }
+
         public string Describe()
         {
             var res = string.Empty;
@@ -596,6 +610,10 @@ namespace SRcsharp.Library
             if (!string.IsNullOrEmpty(_label) && _label != _id)
             {
                 res += "(" + _label + "), ";
+            }
+            else
+            {
+                res += "(" + _id + "), ";
             }
             if (!string.IsNullOrEmpty(_type))
             {
@@ -608,7 +626,7 @@ namespace SRcsharp.Library
 
             res += string.Format("\n{0:F2} {1:F2} {2:F2}\n", _position.X, _position.Y, _position.Z);
             res += string.Format("\n{0:F2} {1:F2} {2:F2}\n", _width, _depth, _height);
-            res += string.Format("\n𝜶{0:F2}°} \n", Yaw);
+            res += string.Format("\n𝜶{0:F2}° \n", Yaw);
             return res;
 
         }
@@ -1905,7 +1923,7 @@ namespace SRcsharp.Library
                 {
                     if (rel.Subject == this)
                     {
-                        if (attribute == "angle")
+                        if (attribute == "Angle")
                         {
                             result = (float)rel.Angle;
                         }

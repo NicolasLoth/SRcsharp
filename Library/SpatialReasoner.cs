@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,132 +13,132 @@ using static SRcsharp.Library.SREnums;
 
 namespace SRcsharp.Library
 {
-	public class SpatialReasoner
-	{
+    public class SpatialReasoner : IEnumerable<SpatialObject>
+    {
 
-		public enum SpatialReasonerBaseContentType { Undefined, Objects, Snaptime, Data, Chain }
+        public enum SpatialReasonerBaseContentType { Undefined, Objects, Snaptime, Data, Chain }
 
-		#region Settings
-		private SpatialAdjustment _adjustment;
+        #region Settings
+        private SpatialAdjustment _adjustment;
 
-		public SpatialAdjustment Adjustment
-		{
-			get { return _adjustment; }
-			set { _adjustment = value; }
-		}
+        public SpatialAdjustment Adjustment
+        {
+            get { return _adjustment; }
+            set { _adjustment = value; }
+        }
 
-		private SpatialPredicatedCategories _deduceCategories;
+        private SpatialPredicatedCategories _deduceCategories;
 
-		public SpatialPredicatedCategories DeduceCategories
-		{
-			get { return _deduceCategories; }
-			set { _deduceCategories = value; }
-		}
-
-
-		private CGVector _north = new CGVector(0.0f, -1.0f);
-
-		public CGVector North
-		{
-			get { return _north; }
-			set { _north = value; }
-		}
-
-		#endregion
+        public SpatialPredicatedCategories DeduceCategories
+        {
+            get { return _deduceCategories; }
+            set { _deduceCategories = value; }
+        }
 
 
-		#region Data
-		private List<SpatialObject> _objects;
+        private CGVector _north = new CGVector(0.0f, -1.0f);
 
-		public List<SpatialObject> Objects
-		{
-			get { return _objects; }
-			set { _objects = value; }
-		}
+        public CGVector North
+        {
+            get { return _north; }
+            set { _north = value; }
+        }
 
-		private SpatialObject? _observer;
+        #endregion
 
-		public SpatialObject? Observer
-		{
-			get { return _observer; }
-			set { _observer = value; }
-		}
 
-		private Dictionary<int, List<SpatialRelation>> _relMap;
+        #region Data
+        private List<SpatialObject> _objects;
 
-		public Dictionary<int, List<SpatialRelation>> RelMap
-		{
-			get { return _relMap; }
-			set { _relMap = value; }
-		}
+        public List<SpatialObject> Objects
+        {
+            get { return _objects; }
+            set { _objects = value; }
+        }
 
-		private List<SpatialInference> _chain;
+        private SpatialObject? _observer;
+
+        public SpatialObject? Observer
+        {
+            get { return _observer; }
+            set { _observer = value; }
+        }
+
+        private Dictionary<int, List<SpatialRelation>> _relMap;
+
+        public Dictionary<int, List<SpatialRelation>> RelMap
+        {
+            get { return _relMap; }
+            set { _relMap = value; }
+        }
+
+        private List<SpatialInference> _chain;
 
         public List<SpatialInference> Chain
-		{
-			get { return _chain; }
-			set { _chain = value; }
-		}
+        {
+            get { return _chain; }
+            set { _chain = value; }
+        }
 
-		private Dictionary<SpatialReasonerBaseContentType, object> _base;
+        private Dictionary<SpatialReasonerBaseContentType, object> _base;
 
-		public Dictionary<SpatialReasonerBaseContentType, object> Base
-		{
-			get { return _base; }
-			set { _base = value; }
-		}
+        public Dictionary<SpatialReasonerBaseContentType, object> Base
+        {
+            get { return _base; }
+            set { _base = value; }
+        }
 
-		private DateTime _snapTime = DateTime.Now;
+        private DateTime _snapTime = DateTime.Now;
 
-		public DateTime SnapTime
-		{
-			get { return _snapTime; }
-			set { _snapTime = value; }
-		}
+        public DateTime SnapTime
+        {
+            get { return _snapTime; }
+            set { _snapTime = value; }
+        }
 
-		#endregion
+        #endregion
 
-		#region Logging
+        #region Logging
 
-		private string _pipeline;
+        private string _pipeline;
 
-		public string Pipeline
-		{
-			get { return _pipeline; }
-			set { _pipeline = value; }
-		}
+        public string Pipeline
+        {
+            get { return _pipeline; }
+            set { _pipeline = value; }
+        }
 
-		private string _name;
+        private string _name;
 
-		public string Name
-		{
-			get { return _name; }
-			set { _name = value; }
-		}
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
 
-		private string _description;
+        private string _description;
 
-		public string Description
-		{
-			get { return _description; }
-			set { _description = value; }
-		}
+        public string Description
+        {
+            get { return _description; }
+            set { _description = value; }
+        }
 
-		private int _logCount;
+        private int _logCount;
 
-		public int LogCount
-		{
-			get { return _logCount; }
-			set { _logCount = value; }
-		}
+        public int LogCount
+        {
+            get { return _logCount; }
+            set { _logCount = value; }
+        }
 
-		private string? _logFolder;
+        private string? _logFolder;
 
-		public string? LogFolder
-		{
-			get { return _logFolder; }
-			set { _logFolder = value; }
-		}
+        public string? LogFolder
+        {
+            get { return _logFolder; }
+            set { _logFolder = value; }
+        }
 
         private string _logBaseFileName = "logBase.json";
 
@@ -157,157 +159,169 @@ namespace SRcsharp.Library
         public List<Dictionary<string, object>> BaseData { get { return (List<Dictionary<string, object>>)_base[SpatialReasonerBaseContentType.Data]; } }
 
 
+        public static SpatialReasoner Create()
+        {
+            return new SpatialReasoner();
+        }
+
+
         public SpatialReasoner()
-		{
-			InitBase();
-		}
+        {
+            _adjustment = new SpatialAdjustment();
+            _chain = new List<SpatialInference>();
+            InitBase();
+        }
 
-		private void InitBase(bool reset = false)
-		{
-			if (_base == null || reset)
-				_base = new Dictionary<SpatialReasonerBaseContentType, object>();
-			if (!_base.ContainsKey(SpatialReasonerBaseContentType.Objects) || reset)
-				_base.Add(SpatialReasonerBaseContentType.Objects, null);
-			if (!_base.ContainsKey(SpatialReasonerBaseContentType.Snaptime) || reset)
-				_base.Add(SpatialReasonerBaseContentType.Snaptime, null);
-			if (!_base.ContainsKey(SpatialReasonerBaseContentType.Data) || reset)
-				_base.Add(SpatialReasonerBaseContentType.Data, null);
-			if (!_base.ContainsKey(SpatialReasonerBaseContentType.Chain) || reset)
-				_base.Add(SpatialReasonerBaseContentType.Chain, null);
-		}
-
-		public void Load(List<SpatialObject> spatialObjs = null)
-		{
-			if (spatialObjs != null)
-			{
-				_objects = spatialObjs;
-			}
-			_observer = null;
-			_relMap = new Dictionary<int, List<SpatialRelation>>();
-
-			InitBase(true);
-
-			if (_objects.Count > 0)
-			{
-				List<int> indices = new List<int>();
-				for (int i = 0; i < _objects.Count; i++)
-				{
-					indices.Add(i);
-				}
-
-				List<object> objList = new List<object>();
-				foreach (var idx in indices)
-				{
-					_objects[idx].Context = this;
-					objList.Add(_objects[idx].AsDict());
-					if (_objects[idx].Observing)
-					{
-						_observer = _objects[idx];
-					}
-				}
-				_base[SpatialReasonerBaseContentType.Objects] = objList;
-			}
-
-			var snapTime = DateTime.Now;
-			_base[SpatialReasonerBaseContentType.Snaptime] = snapTime;
-		}
-
-		public void Load(Dictionary<string, object> objs)
-		{
-			_base[SpatialReasonerBaseContentType.Objects] = objs;
-			SyncToObjects();
-			_base[SpatialReasonerBaseContentType.Snaptime] = _snapTime.ToString();
-			_snapTime = DateTime.Now;
-		}
-
-		public void Load(string json)
-		{
-			throw new NotImplementedException();
-		}
-
-		public SpatialObject? GetObjectById(string id)
-		{
-			var found = _objects.Where(obj => obj.Id == id);
-			if (found.Count() > 1)
-				throw new Exception("More than one Spatial Object found with Id: " + id);
-			return found.FirstOrDefault();
-		}
-
-		public int? IndexOf(string id)
-		{
-			return _objects.ToList().FindIndex(obj => obj.Id == id);
-		}
-
-		public void SetData(string key, object value)
-		{
-			if (_base[SpatialReasonerBaseContentType.Data] == null)
-				_base[SpatialReasonerBaseContentType.Data] = new Dictionary<string, object>();
-			var data = ((Dictionary<string, object>)_base[SpatialReasonerBaseContentType.Data]);
-			if (!data.ContainsKey(key))
-				data[key] = value;
-			else
-				data.Add(key, value);
-		}
-
-		public void SyncToObjects()
-		{
-			_objects = new List<SpatialObject>();
-			_observer = null;
-			_relMap = new Dictionary<int, List<SpatialRelation>>();
-
-			var objectList = (List<Dictionary<string, object>>)_base[SpatialReasonerBaseContentType.Objects];
-			foreach (var objDict in objectList)
-			{
-				var obj = new SpatialObject(objDict["id"].ToString());
-				obj.FromAny(objDict);
-				_objects.Add(obj);
-
-				if (obj.Observing)
-				{
-					_observer = obj;
-				}
-			}
-		}
-
-		public Dictionary<SpatialReasonerBaseContentType, object> TakeSnapshot()
-		{
-			return _base;
-		}
-
-		public void LoadSnapshot(Dictionary<SpatialReasonerBaseContentType, object> snapshot)
-		{
-			_base = snapshot;
-			SyncToObjects();
-		}
-
-		public void Record(SpatialInference inference)
-		{
-			_chain.Append(inference);
-			if (_base[SpatialReasonerBaseContentType.Chain] == null)
-				_base[SpatialReasonerBaseContentType.Chain] = new Dictionary<string, object>();
-
-			((Dictionary<string, object>)_base[SpatialReasonerBaseContentType.Chain]).Concat(inference.AsDict());
-		}
-
-		public List<int> Backtrace()
-		{
-			foreach(var inf in _chain.ToArray().Reverse())
-			{
-				if (inf.IsManipulating())
-					return inf.Input;
-			}
-			return null;
-		}
+        private void InitBase(bool reset = false)
+        {
+            if (_base == null || reset)
+                _base = new Dictionary<SpatialReasonerBaseContentType, object>();
+            if (!_base.ContainsKey(SpatialReasonerBaseContentType.Objects) || reset)
+                _base.Add(SpatialReasonerBaseContentType.Objects, null);
+            if (!_base.ContainsKey(SpatialReasonerBaseContentType.Snaptime) || reset)
+                _base.Add(SpatialReasonerBaseContentType.Snaptime, null);
+            if (!_base.ContainsKey(SpatialReasonerBaseContentType.Data) || reset)
+                _base.Add(SpatialReasonerBaseContentType.Data, null);
+            if (!_base.ContainsKey(SpatialReasonerBaseContentType.Chain) || reset)
+                _base.Add(SpatialReasonerBaseContentType.Chain, null);
+        }
 
 
-		public bool Run(string pipeline)
-		{
+        public SpatialReasoner Load(List<SpatialObject> spatialObjs = null)
+        {
+            if (spatialObjs != null)
+            {
+                _objects = spatialObjs;
+            }
+            _observer = null;
+            _relMap = new Dictionary<int, List<SpatialRelation>>();
+
+            InitBase(true);
+
+            if (_objects.Count > 0)
+            {
+                List<int> indices = new List<int>();
+                for (int i = 0; i < _objects.Count; i++)
+                {
+                    indices.Add(i);
+                }
+
+                List<Dictionary<string, object>> objList = new List<Dictionary<string, object>>();
+                foreach (var idx in indices)
+                {
+                    _objects[idx].Context = this;
+                    var dict = _objects[idx].AsDict();
+                    objList.Add(dict);
+                    if (_objects[idx].Observing)
+                    {
+                        _observer = _objects[idx];
+                    }
+                }
+                _base[SpatialReasonerBaseContentType.Objects] = objList;
+            }
+
+            var snapTime = DateTime.Now;
+            _base[SpatialReasonerBaseContentType.Snaptime] = snapTime;
+
+            return this;
+        }
+
+        public void Load(Dictionary<string, object> objs)
+        {
+            _base[SpatialReasonerBaseContentType.Objects] = objs;
+            SyncToObjects();
+            _base[SpatialReasonerBaseContentType.Snaptime] = _snapTime.ToString();
+            _snapTime = DateTime.Now;
+        }
+
+        public void Load(string json)
+        {
+            throw new NotImplementedException();
+        }
+
+        public SpatialObject? GetObjectById(string id)
+        {
+            var found = _objects.Where(obj => obj.Id == id);
+            if (found.Count() > 1)
+                throw new Exception("More than one Spatial Object found with Id: " + id);
+            return found.FirstOrDefault();
+        }
+
+        public int? IndexOf(string id)
+        {
+            return _objects.ToList().FindIndex(obj => obj.Id == id);
+        }
+
+        public void SetData(string key, object value)
+        {
+            if (_base[SpatialReasonerBaseContentType.Data] == null)
+                _base[SpatialReasonerBaseContentType.Data] = new Dictionary<string, object>();
+            var data = ((Dictionary<string, object>)_base[SpatialReasonerBaseContentType.Data]);
+            if (!data.ContainsKey(key))
+                data[key] = value;
+            else
+                data.Add(key, value);
+        }
+
+        public void SyncToObjects()
+        {
+            _objects = new List<SpatialObject>();
+            _observer = null;
+            _relMap = new Dictionary<int, List<SpatialRelation>>();
+
+            var objectList = (List<Dictionary<string, object>>)_base[SpatialReasonerBaseContentType.Objects];
+            foreach (var objDict in objectList)
+            {
+                var obj = new SpatialObject(objDict["Id"].ToString());
+                obj.FromAny(objDict);
+                _objects.Add(obj);
+
+                if (obj.Observing)
+                {
+                    _observer = obj;
+                }
+            }
+        }
+
+        public Dictionary<SpatialReasonerBaseContentType, object> TakeSnapshot()
+        {
+            return _base;
+        }
+
+        public void LoadSnapshot(Dictionary<SpatialReasonerBaseContentType, object> snapshot)
+        {
+            _base = snapshot;
+            SyncToObjects();
+        }
+
+        public void Record(SpatialInference inference)
+        {
+            _chain.Add(inference);
+            if (_base[SpatialReasonerBaseContentType.Chain] == null)
+                _base[SpatialReasonerBaseContentType.Chain] = new List<Dictionary<string, object>>();
+
+            ((List<Dictionary<string, object>>)_base[SpatialReasonerBaseContentType.Chain]).Add(inference.AsDict());
+        }
+
+        public List<int> Backtrace()
+        {
+            foreach (var inf in _chain.ToArray().Reverse())
+            {
+                if (inf.IsManipulating())
+                    return inf.Input;
+            }
+            return null;
+        }
+
+
+        public bool Run(string pipeline)
+        {
             _pipeline = pipeline;
-            var logCnt = 0;
-			_chain = new List<SpatialInference>();
-            _base[SpatialReasonerBaseContentType.Chain] = new List<object>();
+            _logCount = 0;
+            _chain = new List<SpatialInference>();
+            _base[SpatialReasonerBaseContentType.Chain] = new List<Dictionary<string, object>>();
 
-            var list = pipeline.Split('|')
+            var list = pipeline.Split(new string[] { "|", "->" }, StringSplitOptions.RemoveEmptyEntries)
                                .Select(op => op.Trim())
                                .ToList();
 
@@ -315,13 +329,13 @@ namespace SRcsharp.Library
 
             foreach (var op in list)
             {
-                if (op.StartsWith("log("))
+                if (op.ToLower().StartsWith("log("))
                 {
                     var startIdx = op.IndexOf('(') + 1;
                     var endIdx = op.LastIndexOf(')');
                     Log(op.Substring(startIdx, endIdx - startIdx));
                 }
-                else if (op.StartsWith("adjust("))
+                else if (op.ToLower().StartsWith("adjust("))
                 {
                     var startIdx = op.IndexOf('(') + 1;
                     var endIdx = op.LastIndexOf(')');
@@ -332,7 +346,7 @@ namespace SRcsharp.Library
                         break;
                     }
                 }
-                else if (op.StartsWith("deduce("))
+                else if (op.ToLower().StartsWith("deduce("))
                 {
                     var startIdx = op.IndexOf('(') + 1;
                     var endIdx = op.LastIndexOf(')');
@@ -363,54 +377,139 @@ namespace SRcsharp.Library
             return false;
         }
 
-		public List<SpatialObject> GetResult()
-		{
-			var list = new List<SpatialObject>();
-			if (_chain.Any())
-			{
-				list = _chain.Last().Output.Select(idx => _objects[idx]).ToList();
-			}
-			return list;
-		}
+        public SpatialReasoner Filter(string condition)
+        {
+            var inference = CreateInference();
+            inference.Filter(condition);
+            ChainedOperationCompleted(inference);
+            return this;
+        }
+
+        //public SpatialReasoner Filter(Func<Dictionary<string,object>,bool> filter)
+        //{
+        //    filter.Invoke()
+        //}
+
+        public SpatialReasoner Pick(string relations)
+        {
+            var inference = CreateInference();
+            inference.Pick(relations);
+            ChainedOperationCompleted(inference);
+            return this;
+        }
+
+        public SpatialReasoner Select(string terms)
+        {
+            var inference = CreateInference();
+            inference.Select(terms);
+            ChainedOperationCompleted(inference);
+            return this;
+        }
+
+        public SpatialReasoner Sort(string attribute)
+        {
+            var inference = CreateInference();
+            inference.Sort(attribute);
+            ChainedOperationCompleted(inference);
+            return this;
+        }
+
+        public SpatialReasoner Slice(string range)
+        {
+            var inference = CreateInference();
+            inference.Slice(range);
+            ChainedOperationCompleted(inference);
+            return this;
+        }
+
+        public SpatialReasoner Produce(string terms)
+        {
+            var inference = CreateInference();
+            inference.Produce(terms);
+            ChainedOperationCompleted(inference);
+            return this;
+        }
+
+        public SpatialReasoner Calc(string assignments)
+        {
+            var inference = CreateInference();
+            inference.Calc(assignments);
+            ChainedOperationCompleted(inference);
+            return this;
+        }
+
+        public SpatialReasoner CLog()
+        {
+            Console.WriteLine(string.Join('\n', Result));
+            return this;
+        }
+
+        private SpatialInference CreateInference()
+        {
+            return SpatialInference.Create((_chain.Any() ? _chain.Last().Output : Enumerable.Range(0, _objects.Count).ToList()), this);
+        }
+
+        private bool ChainedOperationCompleted(SpatialInference inference)
+        {
+            Record(inference);
+            if (inference.HasFailed())
+            {
+                LogError();
+                return false;
+            }
+            return true;
+        }
+
+        public List<SpatialObject> GetResult()
+        {
+            var list = new List<SpatialObject>();
+            if (_chain.Any())
+            {
+                list = _chain.Last().Output.Select(idx => _objects[idx]).ToList();
+            }
+            return list;
+        }
 
         public void LogError()
         {
-			Console.WriteLine(_chain.Last()?.Error);
+            Console.WriteLine(_chain.Last()?.Error);
         }
 
-		public static void PrintRelation(SpatialRelation[] relations)
-		{
-			relations.ToList().ForEach(rel => Console.WriteLine(rel.ToString()));
-		}
+        public static void PrintRelation(SpatialRelation[] relations)
+        {
+            relations.ToList().ForEach(rel => Console.WriteLine(rel.ToString()));
+        }
 
-		public List<SpatialRelation> RelationsOf(int idx)
-		{
-			if (_relMap.ContainsKey(idx))
-				return _relMap[idx];
+        public List<SpatialRelation> RelationsOf(int idx)
+        {
+            if (_relMap.ContainsKey(idx))
+                return _relMap[idx];
 
-			var relations = new List<SpatialRelation>();
-			_objects.Where(sub => sub != _objects[idx]).Select(sub => _objects[idx].Relate(sub));
+            var relations = new List<SpatialRelation>();
+            _objects.Where(sub => sub != _objects[idx]).ToList().ForEach(sub => relations.AddRange(_objects[idx].Relate(sub, true)));
 
-			_relMap[idx] = relations;
+            _relMap.Add(idx, relations);
 
-			return relations;
-		}
+            return relations;
+        }
 
         public List<SpatialRelation> RelationsWith(int objIdx, string predicate)
         {
-           var rels = new List<SpatialRelation>();
-			if (objIdx >= 0)
-				rels = RelationsOf(objIdx).Where(rel => rel.Predicate.RawValue == predicate).ToList();
-			return rels;
+            var rels = new List<SpatialRelation>();
+            if (objIdx >= 0)
+                rels = RelationsOf(objIdx).Where(rel => rel.Predicate.IsDefined() && rel.Predicate.RawValue == predicate).ToList();
+            return rels;
         }
 
-		public bool DoesSubjectHasRelationOfPredWithObject(SpatialObject subject, string predicate, int objIdx)
-		{
-			return RelationsOf(objIdx).Any(rel => rel.Subject == subject && rel.Predicate.RawValue == predicate);
-		}
+        public bool DoesSubjectHasRelationOfPredWithObject(SpatialObject subject, string predicate, int objIdx)
+        {
+            var relations = RelationsOf(objIdx);
 
-		public bool Adjust(string settings)
-		{
+            return relations.Any(rel => rel.Subject == subject && rel.Predicate.IsDefined() && rel.Predicate.RawValue == predicate);
+        }
+
+        public bool Adjust(string settings)
+        {
             string error = "";
             var list = settings.Split(';')
                                .Select(s => s.Trim())
@@ -634,8 +733,8 @@ namespace SRcsharp.Library
 
         public void Deduce(string categories)
         {
-			if (categories.Contains("topo"))
-				_deduceCategories |= SpatialPredicatedCategories.Topology;
+            if (categories.Contains("topo"))
+                _deduceCategories |= SpatialPredicatedCategories.Topology;
             if (categories.Contains("connect"))
                 _deduceCategories |= SpatialPredicatedCategories.Connectivity;
             if (categories.Contains("compar"))
@@ -775,7 +874,7 @@ namespace SRcsharp.Library
             try
             {
                 string counterStr = multipleLogs ? _logCount.ToString() : "";
-                var fileURL = Path.Combine(_logFolder,"log" + counterStr + ".md");
+                var fileURL = Path.Combine(_logFolder, "log" + counterStr + ".md");
                 File.WriteAllText(fileURL, md);
             }
             catch (Exception ex)
@@ -796,6 +895,27 @@ namespace SRcsharp.Library
             throw new NotImplementedException();
         }
 
+        public IEnumerator<SpatialObject> GetEnumerator()
+        {
+            return _objects.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _objects.GetEnumerator();
+        }
 
     }
+
+    public static class SpatialReasonerExtensions
+    { 
+
+        public static IEnumerable<SpatialObject> Pick(this IEnumerable<SpatialObject> so)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+
+
 }

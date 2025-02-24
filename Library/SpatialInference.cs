@@ -16,7 +16,7 @@ namespace SRcsharp.Library
         public enum FilterOperations { None, Equals, DoubleEquals, Smaller, Greater, SmallerEquals, GreaterEquals, NotEquals, NotEquals2 }; //Ternary operations
         public readonly string[] FilterOperationLiterals = new string[] { "=", "==", "<", ">", "<=", ">=", "!=", "<>" };
         public enum BooleanOperations { None, AND, OR, XOR, NOT};
-        public readonly string[] BooleanOperationLiterals = new string[] { "AND", "OR", "XOR","NOT"};
+        public readonly string[] BooleanOperationLiterals = new string[] { "AND", "OR", "XOR", "NOT", "!"};
 
         private List<int> _input;
         private List<int> _output;
@@ -32,52 +32,79 @@ namespace SRcsharp.Library
         public string Error { get => _error; set => _error = value; }
         public SpatialReasoner Fact { get => _fact; set => _fact = value; }
 
-        public SpatialInference(List<int> input, string operation, SpatialReasoner fact)
+        public static SpatialInference Create(List<int> input, string operation, SpatialReasoner fact)
+        {
+            return new SpatialInference(input, operation, fact);
+        }
+
+        public static SpatialInference Create(List<int> input, SpatialReasoner fact)
+        {
+            return new SpatialInference(input, fact);
+        }
+
+        public SpatialInference(List<int> input, SpatialReasoner fact)
+        {
+            _input = input;
+            _fact = fact;
+            _output = new List<int>();
+        }
+
+        public SpatialInference(List<int> input, string operation, SpatialReasoner fact, bool run = true)
         {
             _input = input;
             _operation = operation;
             _fact = fact;
+            _output = new List<int>();
+            
             int endIdx = operation.Length - 1;
 
-            if (operation.StartsWith("filter("))
+            if (operation.ToLower().StartsWith("filter("))
             {
                 string condition = operation.Substring(7, endIdx - 7);
-                Filter(condition);
+                if(run)
+                    Filter(condition);
             }
-            else if (operation.StartsWith("pick("))
+            else if (operation.ToLower().StartsWith("pick("))
             {
                 string relations = operation.Substring(5, endIdx - 5);
-                Pick(relations);
+                if (run)
+                    Pick(relations);
             }
-            else if (operation.StartsWith("select("))
+            else if (operation.ToLower().StartsWith("select("))
             {
                 string terms = operation.Substring(7, endIdx - 7);
-                Select(terms);
+                if (run)
+                    Select(terms);
             }
-            else if (operation.StartsWith("sort("))
+            else if (operation.ToLower().StartsWith("sort("))
             {
                 string attribute = operation.Substring(5, endIdx - 5);
-                Sort(attribute);
+                if (run)
+                    Sort(attribute);
             }
-            else if (operation.StartsWith("slice("))
+            else if (operation.ToLower().StartsWith("slice("))
             {
                 string range = operation.Substring(6, endIdx - 6);
-                Slice(range);
+                if (run)
+                    Slice(range);
             }
-            else if (operation.StartsWith("produce("))
+            else if (operation.ToLower().StartsWith("produce("))
             {
                 string terms = operation.Substring(8, endIdx - 8);
-                Produce(terms);
+                if (run)
+                    Produce(terms);
             }
-            else if (operation.StartsWith("calc("))
+            else if (operation.ToLower().StartsWith("calc("))
             {
                 string assignments = operation.Substring(5, endIdx - 5);
-                Calc(assignments);
+                if (run)
+                    Calc(assignments);
             }
-            else if (operation.StartsWith("map("))
+            else if (operation.ToLower().StartsWith("map("))
             {
                 string assignments = operation.Substring(4, endIdx - 4);
-                Map(assignments);
+                if (run)
+                    Map(assignments);
             }
         }
 
@@ -85,7 +112,7 @@ namespace SRcsharp.Library
         {
             if (!Output.Contains(index))
             {
-                Output.Append(index);
+                Output.Add(index);
             }
         }
 
@@ -99,74 +126,96 @@ namespace SRcsharp.Library
             //throw new NotImplementedException();
 
             var adds = new List<int>();
-            var subs = condition.Split(FilterOperationLiterals, StringSplitOptions.RemoveEmptyEntries);
-            var propertyString = subs[0];
-            var valueString = subs[1];
-            var op = FilterOperations.None;
-            for (int i = 0; i < FilterOperationLiterals.Length; i++)
-            {
-                if (condition.Contains(FilterOperationLiterals[i]))
-                    op = (FilterOperations)i + 1;
-            }
-            var boolOp = BooleanOperations.None;
-            for (int i = 0; i < BooleanOperationLiterals.Length; i++)
-            {
-                if (condition.Contains(BooleanOperationLiterals[i]))
-                    boolOp = (BooleanOperations)i + 1;
-            }
+            //var subs = condition.Split(FilterOperationLiterals, StringSplitOptions.RemoveEmptyEntries);
+            //var propertyString = subs[0];
+            //var valueString = subs[1];
+            //var op = FilterOperations.None;
+            //for (int i = 0; i < FilterOperationLiterals.Length; i++)
+            //{
+            //    if (condition.Contains(FilterOperationLiterals[i]))
+            //        op = (FilterOperations)i + 1;
+            //}
+            //var boolOp = BooleanOperations.None;
+            //for (int i = 0; i < BooleanOperationLiterals.Length; i++)
+            //{
+            //    if (condition.Contains(BooleanOperationLiterals[i]))
+            //        boolOp = (BooleanOperations)i + 1;
+            //}
 
             var result = false;
+
             foreach (var i in indices)
             {
                 var so = Fact.BaseObjects[i];
-                if (op != FilterOperations.None)
-                {
-                    switch (op)
-                    {
-                        case FilterOperations.Equals:
-                        case FilterOperations.DoubleEquals:
-                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) == 0);
-                            break;
-                        case FilterOperations.Smaller:
-                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) < 0);
-                            break;
-                        case FilterOperations.Greater:
-                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) > 0);
-                            break;
-                        case FilterOperations.SmallerEquals:
-                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) <= 0);
-                            break;
-                        case FilterOperations.GreaterEquals:
-                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) >= 0);
-                            break;
-                        case FilterOperations.NotEquals:
-                        case FilterOperations.NotEquals2:
-                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) != 0);
-                            break;
-                    }
-                }
-                if (boolOp != BooleanOperations.None)
-                {
-                    switch (boolOp)
-                    {
-                        case BooleanOperations.AND:
-                            result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) == 0);
-                            break;
-                    }
-                }
+                var cond = ReplaceVariables(condition, so);
+                result = Evaluator.XEval(cond);
                 if (result)
                 {
                     adds.Add(i);
                 }
             }
 
+            //foreach (var i in indices)
+            //{
+            //    var so = Fact.BaseObjects[i];
+            //    if (op != FilterOperations.None)
+            //    {
+            //        switch (op)
+            //        {
+            //            case FilterOperations.Equals:
+            //            case FilterOperations.DoubleEquals:
+            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) == 0);
+            //                break;
+            //            case FilterOperations.Smaller:
+            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) < 0);
+            //                break;
+            //            case FilterOperations.Greater:
+            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) > 0);
+            //                break;
+            //            case FilterOperations.SmallerEquals:
+            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) <= 0);
+            //                break;
+            //            case FilterOperations.GreaterEquals:
+            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) >= 0);
+            //                break;
+            //            case FilterOperations.NotEquals:
+            //            case FilterOperations.NotEquals2:
+            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) != 0);
+            //                break;
+            //        }
+            //    }
+            //    if (boolOp != BooleanOperations.None)
+            //    {
+            //        switch (boolOp)
+            //        {
+            //            case BooleanOperations.AND:
+            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) == 0);
+            //                break;
+            //        }
+            //    }
+            //    if (result)
+            //    {
+            //        adds.Add(i);
+            //    }
+            //}
+
             Succeeded = true;
             return adds;
         }
 
+        private string ReplaceVariables(string condition, Dictionary<string, object> so)
+        {
+            foreach(var kvp in so)
+            {
+                if (condition.Contains(kvp.Key.ToLower()))
+                    condition = condition.Replace(kvp.Key, kvp.Value.ToString(), StringComparison.OrdinalIgnoreCase);
+            }
+            return condition;
+        }
+
         public void Pick(string relations)
         {
-            var predicates = relations.Keywords();
+            var predicates = relations.Keywords().Where(k => !BooleanOperationLiterals.Contains(k.ToUpper()));
 
             foreach (var i in Input)
             {
@@ -383,10 +432,10 @@ namespace SRcsharp.Library
             {
                 switch (list[0])
                 {
-                    case "width":
+                    case "Width":
                         sortedObjects = inputObjects.OrderBy(o => o.Width).ToList();
                         break;
-                    case "height":
+                    case "Height":
                         sortedObjects = inputObjects.OrderBy(o => o.Height).ToList();
                         break;
                     // Add other cases for attributes here
@@ -399,10 +448,10 @@ namespace SRcsharp.Library
             {
                 switch (list[0])
                 {
-                    case "width":
+                    case "Width":
                         sortedObjects = inputObjects.OrderByDescending(o => o.Width).ToList();
                         break;
-                    case "height":
+                    case "Height":
                         sortedObjects = inputObjects.OrderByDescending(o => o.Height).ToList();
                         break;
                     // Add other cases for attributes here
@@ -492,34 +541,34 @@ namespace SRcsharp.Library
                 };
         }
 
-        public static string AttributePredicate(string condition)
-        {
-            string cond = condition.Trim();
+        //public static string AttributePredicate(string condition)
+        //{
+        //    string cond = condition.Trim();
 
-            // Iterate through boolean attributes and modify condition
-            foreach (var word in SpatialObject.BooleanAttributes.Keys)
-            {
-                int index = 0;
-                while ((index = cond.IndexOf(word, index)) != -1)
-                {
-                    if (index + word.Length < cond.Length)
-                    {
-                        var ahead = cond.Substring(index + word.Length, Math.Min(5, cond.Length - index - word.Length));
-                        if (!ahead.Contains("=") && !ahead.Contains("<") && !ahead.Contains(">"))
-                        {
-                            cond = cond.Substring(0, index) + word + " == TRUE" + cond.Substring(index + word.Length);
-                        }
-                    }
-                    else
-                    {
-                        cond = cond.Substring(0, index) + word + " == TRUE";
-                    }
-                    index += word.Length;
-                }
-            }
+        //    // Iterate through boolean attributes and modify condition
+        //    foreach (var word in SpatialObject.BooleanAttributes.Keys)
+        //    {
+        //        int index = 0;
+        //        while ((index = cond.IndexOf(word, index)) != -1)
+        //        {
+        //            if (index + word.Length < cond.Length)
+        //            {
+        //                var ahead = cond.Substring(index + word.Length, Math.Min(5, cond.Length - index - word.Length));
+        //                if (!ahead.Contains("=") && !ahead.Contains("<") && !ahead.Contains(">"))
+        //                {
+        //                    cond = cond.Substring(0, index) + word + " == TRUE" + cond.Substring(index + word.Length);
+        //                }
+        //            }
+        //            else
+        //            {
+        //                cond = cond.Substring(0, index) + word + " == TRUE";
+        //            }
+        //            index += word.Length;
+        //        }
+        //    }
 
-            return cond;
-        }
+        //    return cond;
+        //}
 
 
 
