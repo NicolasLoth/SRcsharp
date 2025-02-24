@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace SRcsharp.Library
 {
@@ -32,7 +28,7 @@ namespace SRcsharp.Library
 			set { _preposition = value; }
 		}
 
-		private string _synonym = string.Empty;
+		private string _synonym;
 
 		public string Synonym
 		{
@@ -40,7 +36,7 @@ namespace SRcsharp.Library
 			set { _synonym = value; }
 		}
 
-		private string _reverse = string.Empty;
+		private string _reverse;
 
 		public string Reverse
 		{
@@ -48,7 +44,7 @@ namespace SRcsharp.Library
 			set { _reverse = value; }
 		}
 
-		private string _antonym = string.Empty;
+		private string _antonym;
 
 		public string Antonym
 		{
@@ -56,7 +52,7 @@ namespace SRcsharp.Library
 			set { _antonym = value; }
 		}
 
-		private string _verb = "is";
+		private string _verb;
 
         public string Verb
 		{
@@ -64,7 +60,7 @@ namespace SRcsharp.Library
 			set { _verb = value; }
 		}
 
-        public PredicateTerm(SpatialPredicate code, string pred, string preposition, string synonym, string reverse, string antonym, string verb)
+        public PredicateTerm(SpatialPredicate code, string pred, string preposition, string synonym, string reverse, string antonym, string verb="is")
         {
 			_code = code;		
 			_predicate = pred;

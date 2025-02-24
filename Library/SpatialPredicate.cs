@@ -1,13 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
+﻿using System;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using static SRcsharp.Library.SpatialPredicate;
+using System.Collections;
+using System.Collections.Generic;
+
 
 namespace SRcsharp.Library
 {
@@ -45,22 +41,22 @@ namespace SRcsharp.Library
             LoadAllPredicateNames();
         }
 
-        public SpatialPredicate()
-        {
-            Proximity = SpatialPredicateProximity.Undefined;
-            Directionality = SpatialPredicateDirectionality.Undefined;
-            Adjacency = SpatialPredicateAdjacency.Undefined;
-            Orientations = SpatialPredicateOrientations.Undefined;
-            Assembly = SpatialPredicateAssembly.Undefined;
-            Contacts = SpatialPredicateContacts.Undefined;
-            Comparability = SpatialPredicateComparability.Undefined;
-            Similarity = SpatialPredicateSimilarity.Undefined;
-            Visibility = SpatialPredicateVisibility.Undefined;
-            Geography = SpatialPredicateGeography.Undefined;
+        //public SpatialPredicate()
+        //{
+        //    Proximity = SpatialPredicateProximity.Undefined;
+        //    Directionality = SpatialPredicateDirectionality.Undefined;
+        //    Adjacency = SpatialPredicateAdjacency.Undefined;
+        //    Orientations = SpatialPredicateOrientations.Undefined;
+        //    Assembly = SpatialPredicateAssembly.Undefined;
+        //    Contacts = SpatialPredicateContacts.Undefined;
+        //    Comparability = SpatialPredicateComparability.Undefined;
+        //    Similarity = SpatialPredicateSimilarity.Undefined;
+        //    Visibility = SpatialPredicateVisibility.Undefined;
+        //    Geography = SpatialPredicateGeography.Undefined;
 
-            //_allPredicateValues = new List<Enum>();
-            //LoadAllPredicateValues();
-        }
+        //    //_allPredicateValues = new List<Enum>();
+        //    //LoadAllPredicateValues();
+        //}
 
         private static void LoadAllPredicateNames()
         {
@@ -163,7 +159,7 @@ namespace SRcsharp.Library
             return AllPredicateValues.Where(e=> Convert.ToInt32(e) != 0).SelectMany(e => e.GetFlagNames()).ToList();
         }
 
-        public string? GetDefinedPredicateValueName(bool throwErrorIfMultiDefined = false)
+        public string GetDefinedPredicateValueName(bool throwErrorIfMultiDefined = false)
         {
             var values = GetDefinedPredicateValueNames();
             if (throwErrorIfMultiDefined && values.Count() > 1)
@@ -171,7 +167,7 @@ namespace SRcsharp.Library
             return values.FirstOrDefault();
         }
 
-        public string? RawValue { get { return GetDefinedPredicateValueName(true); } }
+        public string RawValue { get { return GetDefinedPredicateValueName(true); } }
 
         public override string ToString()
         {
@@ -251,25 +247,25 @@ namespace SRcsharp.Library
 
             if (!_allPredicateNames.Contains(value)) { return null; }
 
-            if (Enum.GetNames<SpatialPredicateProximity>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateProximity)).Contains(value))
                 return typeof(SpatialPredicateProximity);
-            if (Enum.GetNames<SpatialPredicateDirectionality>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateDirectionality)).Contains(value))
                 return typeof(SpatialPredicateDirectionality);
-            if (Enum.GetNames<SpatialPredicateAdjacency>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateAdjacency)).Contains(value))
                 return typeof(SpatialPredicateAdjacency);
-            if (Enum.GetNames<SpatialPredicateOrientations>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateOrientations)).Contains(value))
                 return typeof(SpatialPredicateOrientations);
-            if (Enum.GetNames<SpatialPredicateAssembly>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateAssembly)).Contains(value))
                 return typeof(SpatialPredicateAssembly);
-            if (Enum.GetNames<SpatialPredicateContacts>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateContacts)).Contains(value))
                 return typeof(SpatialPredicateContacts);
-            if (Enum.GetNames<SpatialPredicateComparability>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateComparability)).Contains(value))
                 return typeof(SpatialPredicateComparability);
-            if (Enum.GetNames<SpatialPredicateSimilarity>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateSimilarity)).Contains(value))
                 return typeof(SpatialPredicateSimilarity);
-            if (Enum.GetNames<SpatialPredicateVisibility>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateVisibility)).Contains(value))
                 return typeof(SpatialPredicateVisibility);
-            if (Enum.GetNames<SpatialPredicateGeography>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateGeography)).Contains(value))
                 return typeof(SpatialPredicateGeography);
 
             return null;
@@ -280,25 +276,26 @@ namespace SRcsharp.Library
         {
             if (!_allPredicateNames.Contains(value)) { return SpatialPredicateTypes.None; }
 
-            if (Enum.GetNames<SpatialPredicateProximity>().Contains(value))
+
+            if (Enum.GetNames(typeof(SpatialPredicateProximity)).Contains(value))
                 return SpatialPredicateTypes.Proximity;
-            if (Enum.GetNames<SpatialPredicateDirectionality>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateDirectionality)).Contains(value))
                 return SpatialPredicateTypes.Directionality;
-            if (Enum.GetNames<SpatialPredicateAdjacency>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateAdjacency)).Contains(value))
                 return SpatialPredicateTypes.Adjacency;
-            if (Enum.GetNames<SpatialPredicateOrientations>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateOrientations)).Contains(value))
                 return SpatialPredicateTypes.Orientations;
-            if (Enum.GetNames<SpatialPredicateAssembly>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateAssembly)).Contains(value))
                 return SpatialPredicateTypes.Assembly;
-            if (Enum.GetNames<SpatialPredicateContacts>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateContacts)).Contains(value))
                 return SpatialPredicateTypes.Contacts;
-            if (Enum.GetNames<SpatialPredicateComparability>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateComparability)).Contains(value))
                 return SpatialPredicateTypes.Comparability;
-            if (Enum.GetNames<SpatialPredicateSimilarity>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateSimilarity)).Contains(value))
                 return SpatialPredicateTypes.Similarity;
-            if (Enum.GetNames<SpatialPredicateVisibility>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateVisibility)).Contains(value))
                 return SpatialPredicateTypes.Visibility;
-            if (Enum.GetNames<SpatialPredicateGeography>().Contains(value))
+            if (Enum.GetNames(typeof(SpatialPredicateGeography)).Contains(value))
                 return SpatialPredicateTypes.Geography;
 
             return SpatialPredicateTypes.None;
@@ -547,15 +544,25 @@ namespace SRcsharp.Library
             BLU = 1 << 25,
             BRU = 1 << 26
         }
+
+        public override bool Equals(object obj)
+        {
+            return ((SpatialPredicate)obj).Equals(this);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.GetHashCode();
+        }
     }
 
-    public struct SpatialPredicateTopology
-    {
-        public SpatialPredicateProximity Proximity { get; set; }
-        public SpatialPredicateDirectionality Directionality { get; set; }
-        public SpatialPredicateAdjacency Adjacency { get; }
-        public SpatialPredicateOrientations Orientations { get; }
-        public SpatialPredicateAssembly Assembly { get; }
-    }
+    //public struct SpatialPredicateTopology
+    //{
+    //    public SpatialPredicateProximity Proximity { get; set; }
+    //    public SpatialPredicateDirectionality Directionality { get; set; }
+    //    public SpatialPredicateAdjacency Adjacency { get; }
+    //    public SpatialPredicateOrientations Orientations { get; }
+    //    public SpatialPredicateAssembly Assembly { get; }
+    //}
 }
     

@@ -1,12 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using static SRcsharp.Library.SREnums;
+using System.Collections;
+using System.Collections.Generic;
+
 
 namespace SRcsharp.Library
 {
@@ -46,37 +44,37 @@ namespace SRcsharp.Library
         //    return res;
         //}
 
-        public static T ThrowIfNull<T>(
-            this T? argument,
-            string? message = default,
-            [CallerArgumentExpression("argument")] string? paramName = default
-        ) where T : notnull
-        {
-            if (argument is null)
-            {
-                throw new ArgumentNullException(paramName, message);
-            }
-            else
-            {
-                return argument;
-            }
-        }
+        //public static T ThrowIfNull<T>(
+        //    this T? argument,
+        //    string? message = default,
+        //    [CallerArgumentExpression("argument")] string? paramName = default
+        //) where T : notnull
+        //{
+        //    if (argument is null)
+        //    {
+        //        throw new ArgumentNullException(paramName, message);
+        //    }
+        //    else
+        //    {
+        //        return argument;
+        //    }
+        //}
 
-        public static T ThrowIfNull<T>(
-            this T? argument,
-            string? message = default,
-            [CallerArgumentExpression("argument")] string? paramName = default
-        ) where T : unmanaged
-        {
-            if (argument is null)
-            {
-                throw new ArgumentNullException(paramName, message);
-            }
-            else
-            {
-                return (T)argument;
-            }
-        }
+        //public static T ThrowIfNull<T>(
+        //    this T? argument,
+        //    string? message = default,
+        //    [CallerArgumentExpression("argument")] string? paramName = default
+        //) where T : unmanaged
+        //{
+        //    if (argument is null)
+        //    {
+        //        throw new ArgumentNullException(paramName, message);
+        //    }
+        //    else
+        //    {
+        //        return (T)argument;
+        //    }
+        //}
 
 
         public static List<string> Keywords(this string str)

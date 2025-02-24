@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace SRcsharp.Library
 {
@@ -35,7 +29,7 @@ namespace SRcsharp.Library
 			set { _object = value; }
 		}
 
-		private float _delta = 0.0f;
+		private float _delta ;
 
 		public float Delta
 		{
@@ -43,7 +37,7 @@ namespace SRcsharp.Library
 			set { _delta = value; }
 		}
 
-		private double _angle = 0.0f;
+		private double _angle;
 
 		public double Angle
 		{
@@ -88,7 +82,7 @@ namespace SRcsharp.Library
 				}
 
 
-				str.Concat(" " + SpatialTerms.Instance.GetTermWithVerbAndPreposition(_predicate) + " ");
+				string.Concat(str," " + SpatialTerms.Instance.GetTermWithVerbAndPreposition(_predicate) + " ");
 
 
 				if(!string.IsNullOrEmpty(_object.Label)) {

@@ -1,14 +1,11 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+using System.IO;
+using System.Linq;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+
 using static SRcsharp.Library.SREnums;
 
 namespace SRcsharp.Library
@@ -56,9 +53,9 @@ namespace SRcsharp.Library
             set { _objects = value; }
         }
 
-        private SpatialObject? _observer;
+        private SpatialObject _observer;
 
-        public SpatialObject? Observer
+        public SpatialObject Observer
         {
             get { return _observer; }
             set { _observer = value; }
@@ -314,7 +311,7 @@ namespace SRcsharp.Library
         }
 
 
-        public bool Run(string pipeline)
+        public bool Run(string pipeline, bool doLogging = true)
         {
             _pipeline = pipeline;
             _logCount = 0;
@@ -333,7 +330,8 @@ namespace SRcsharp.Library
                 {
                     var startIdx = op.IndexOf('(') + 1;
                     var endIdx = op.LastIndexOf(')');
-                    Log(op.Substring(startIdx, endIdx - startIdx));
+                    if(doLogging)
+                        Log(op.Substring(startIdx, endIdx - startIdx));
                 }
                 else if (op.ToLower().StartsWith("adjust("))
                 {

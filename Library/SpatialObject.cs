@@ -1,17 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
-using System.Numerics;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Reflection.Metadata;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.X86;
-using System.Text;
-using System.Threading.Tasks;
 using static SRcsharp.Library.SpatialPredicate;
 using static SRcsharp.Library.SREnums;
 
@@ -45,7 +37,7 @@ namespace SRcsharp.Library
             set { _cause = value; }
         }
 
-        private string _label = string.Empty;
+        private string _label;
         [SpatialObjectProperty]
         public string Label
         {
@@ -53,7 +45,7 @@ namespace SRcsharp.Library
             set { _label = value; }
         }
 
-        private string _type = string.Empty;
+        private string _type;
         [SpatialObjectProperty]
         public string Type
         {
@@ -61,7 +53,7 @@ namespace SRcsharp.Library
             set { _type = value; }
         }
 
-        private string _supertype = string.Empty;
+        private string _supertype;
         [SpatialObjectProperty]
         public string Supertype
         {
@@ -69,7 +61,7 @@ namespace SRcsharp.Library
             set { _supertype = value; }
         }
 
-        private string _look = string.Empty;
+        private string _look;
         [SpatialObjectProperty]
         public string Look
         {
@@ -77,9 +69,9 @@ namespace SRcsharp.Library
             set { _look = value; }
         }
 
-        private Dictionary<string, object>? _data = null;
+        private Dictionary<string, object> _data = null;
 
-        public Dictionary<string, object>? Data
+        public Dictionary<string, object> Data
         {
             get { return _data; }
             set { _data = value; }

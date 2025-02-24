@@ -1,11 +1,9 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Collections;
 using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using static SRcsharp.Library.SpatialPredicate;
+using System.IO;
+using Newtonsoft.Json;
+
 
 namespace SRcsharp.Library
 {
@@ -29,11 +27,11 @@ namespace SRcsharp.Library
 			set { _terms = value; }
 		}
 
-        public SpatialTerms()
-        {
-            _terms = new PredicateTerm[0];
-            _terms = LoadPredicateTerms();
-        }
+        //public SpatialTerms()
+        //{
+        //    _terms = new PredicateTerm[0];
+        //    _terms = LoadPredicateTerms();
+        //}
 
 
         public SpatialPredicate? GetPredicate(string name)
@@ -125,12 +123,12 @@ namespace SRcsharp.Library
         public PredicateTerm[] LoadPredicateTerms(string jsonFilePath = "spatialterms.json")
         {
             var json = File.ReadAllText(jsonFilePath);
-            var terms = JsonConvert.DeserializeObject<PredicateTerm[]>(json, new SpatialPredicateTypeConverter());
-            if(terms == null)
+            _terms = JsonConvert.DeserializeObject<PredicateTerm[]>(json, new SpatialPredicateTypeConverter());
+            if(_terms == null)
             {
                 throw new NotImplementedException("Error reading predicate terms config file");
             }
-            return terms;
+            return _terms;
             
         }
 
