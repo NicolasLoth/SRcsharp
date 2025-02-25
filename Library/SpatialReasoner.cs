@@ -473,7 +473,7 @@ namespace SRcsharp.Library
             Console.WriteLine(_chain.Last()?.Error);
         }
 
-        public static void PrintRelation(SpatialRelation[] relations)
+        public static void PrintRelation(List<SpatialRelation> relations)
         {
             relations.ToList().ForEach(rel => Console.WriteLine(rel.ToString()));
         }
