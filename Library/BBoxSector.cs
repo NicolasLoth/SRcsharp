@@ -25,7 +25,7 @@ namespace SRcsharp.Library
     //Migration comment:
     public static class BBoxSector
     { 
-
+        public static Dictionary<BBoxSectors,string> BBoxCombinations;
         public const BBoxSectors AL = BBoxSectors.Ahead | BBoxSectors.Left;
         public const BBoxSectors AR = BBoxSectors.Ahead | BBoxSectors.Right;
         public const BBoxSectors BL = BBoxSectors.Behind | BBoxSectors.Left;
@@ -45,8 +45,45 @@ namespace SRcsharp.Library
         public const BBoxSectors ALU = BBoxSectors.Ahead | BBoxSectors.Left | BBoxSectors.Below;
         public const BBoxSectors ARU = BBoxSectors.Ahead | BBoxSectors.Right | BBoxSectors.Below;
         public const BBoxSectors BLU = BBoxSectors.Behind | BBoxSectors.Left | BBoxSectors.Below;
-        public const BBoxSectors BRU = BBoxSectors.Ahead | BBoxSectors.Right | BBoxSectors.Below;
+        public const BBoxSectors BRU = BBoxSectors.Behind | BBoxSectors.Right | BBoxSectors.Below;
 
+        static BBoxSector()
+        {
+            BBoxCombinations = new Dictionary<BBoxSectors, string>();
+            BBoxCombinations.Add(BBoxSectors.None, "None");
+            BBoxCombinations.Add(BBoxSectors.Inside, "I");
+            BBoxCombinations.Add(BBoxSectors.Ahead, "A");
+            BBoxCombinations.Add(BBoxSectors.Behind, "B");
+            BBoxCombinations.Add(BBoxSectors.Above, "O");
+            BBoxCombinations.Add(BBoxSectors.Below, "U");
+            BBoxCombinations.Add(BBoxSectors.Left, "L");
+            BBoxCombinations.Add(BBoxSectors.Right, "R");
+            BBoxCombinations.Add(AL, "AL");
+            BBoxCombinations.Add(AR, "AR");
+            BBoxCombinations.Add(BL, "BL");
+            BBoxCombinations.Add(BR, "BR");
+            BBoxCombinations.Add(AO, "AO");
+            BBoxCombinations.Add(AU , "AU");
+            BBoxCombinations.Add(BO, "BO");
+            BBoxCombinations.Add(BU, "BU");
+            BBoxCombinations.Add(LO, "LO");
+            BBoxCombinations.Add(LU, "LU");
+            BBoxCombinations.Add(RO, "RO");
+            BBoxCombinations.Add(RU, "RU");
+            BBoxCombinations.Add(ALO, "ALO");
+            BBoxCombinations.Add(ARO, "ARO");
+            BBoxCombinations.Add(BLO, "BLO");
+            BBoxCombinations.Add(BRO, "BRO");
+            BBoxCombinations.Add(ALU, "ALU");
+            BBoxCombinations.Add(ARU, "ARU");
+            BBoxCombinations.Add(BLU, "BLU");
+            BBoxCombinations.Add(BRU, "BRU");
+        }
+
+        public static string GetCombinedName(BBoxSectors sectors)
+        {
+            return BBoxCombinations.Where(comb => comb.Key == sectors).Select(comb => comb.Value).First();
+        }
 
         public static int GetDivergencies(this BBoxSectors bboxSectors)
         {

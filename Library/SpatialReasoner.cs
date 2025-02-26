@@ -184,6 +184,11 @@ namespace SRcsharp.Library
         }
 
 
+        public SpatialReasoner Load(SpatialObject obj)
+        {
+            return Load(new List<SpatialObject> { obj });
+        }
+
         public SpatialReasoner Load(List<SpatialObject> spatialObjs = null)
         {
             if (spatialObjs != null)

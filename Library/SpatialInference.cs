@@ -204,7 +204,12 @@ namespace SRcsharp.Library
             foreach(var kvp in so)
             {
                 if (condition.Contains(kvp.Key.ToLower()))
-                    condition = condition.Replace(kvp.Key, kvp.Value.ToString(), StringComparison.OrdinalIgnoreCase);
+                {
+                    if(kvp.Value.GetType() == typeof(string))
+                        condition = condition.Replace(kvp.Key, "'"+kvp.Value.ToString()+"'", StringComparison.OrdinalIgnoreCase);
+                    else
+                        condition = condition.Replace(kvp.Key, kvp.Value.ToString(), StringComparison.OrdinalIgnoreCase);
+                }
             }
             return condition;
         }

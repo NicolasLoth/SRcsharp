@@ -10,42 +10,44 @@ namespace SRcsharp.Library
     {
 
 		private float _pose = 0.0f;
-
-		public float Pose
+        [SpatialObjectProperty]
+        public float Pose
 		{
 			get { return _pose; }
 			set { _pose = value; }
 		}
 
 		private float _dimension = 0.0f;
-
-		public float Dimension
+        [SpatialObjectProperty]
+        public float Dimension
 		{
 			get { return _dimension; }
 			set { _dimension = value; }
 		}
 
 		private float _label = 0.0f;
-
-		public float Label
+        [SpatialObjectProperty]
+        public float Label
 		{
 			get { return _label; }
 			set { _label = value; }
 		}
 
 		private float _look = 0.0f;
-
-		public float Look
+        [SpatialObjectProperty]
+        public float Look
 		{
 			get { return _look; }
 			set { _look = value; }
 		}
 
+        [SpatialObjectProperty]
         public float Value { 
 			get { return (_pose + _dimension + _label) / 3; }
 			set { _pose = value; _dimension = value; _label = value; }
 		}
 
+        [SpatialObjectProperty]
         public float Spatial
         {
             get { return (_pose + _dimension) / 2; }

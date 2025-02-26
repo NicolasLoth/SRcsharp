@@ -88,7 +88,8 @@ namespace SRcsharp.Library
                     Comparability,
                     Similarity,
                     Visibility,
-                    Geography
+                    Geography,
+                    Sectors
                 };
             }
             //_allPredicateValues = new List<Type>
@@ -127,6 +128,22 @@ namespace SRcsharp.Library
             return pred;
         }
 
+        public static SpatialPredicate CreateSpatialPredicateByNames(string[] names, bool returnUndefinedPredicate = false)
+        {
+            var pred = new SpatialPredicate();
+
+            foreach (string name in names)
+            {
+                if (!returnUndefinedPredicate && !_allPredicateNames.Contains(name)) { throw new Exception("SpatialPredicate type not found"); }
+
+                var enumType = SpatialPredicate.GetSpatialPredicateEnumTypeForValue(name);
+                var type = SpatialPredicate.GetSpatialPredicateTypeForValue(name);
+                pred.AddValue(enumType, (int)Enum.Parse(type, name));
+                //var pred = SpatialPredicate.CreateSpatialPredicate(enumType, (int)Enum.Parse(type, name));
+            }
+            return pred;
+        }
+
         public static bool IsDefined(SpatialPredicate pred)
         {
             return pred.AllPredicateValues.Any(e => Convert.ToInt32(e) != 0);
@@ -156,6 +173,7 @@ namespace SRcsharp.Library
 
         public List<string> GetDefinedPredicateValueNames()
         {
+            //return AllPredicateValues.SelectMany(e => e.GetFlagNames()).ToList();
             return AllPredicateValues.Where(e=> Convert.ToInt32(e) != 0).SelectMany(e => e.GetFlagNames()).ToList();
         }
 
@@ -168,6 +186,8 @@ namespace SRcsharp.Library
         }
 
         public string RawValue { get { return GetDefinedPredicateValueName(true); } }
+
+        //public List<string> RawValues { get { return GetDefinedPredicateValueNames(); } }
 
         public override string ToString()
         {
@@ -198,8 +218,50 @@ namespace SRcsharp.Library
                     return Visibility != 0;
                 case SpatialPredicateTypes.Geography:
                     return Geography != 0;
+                case SpatialPredicateTypes.Sectors:
+                    return Sectors != 0;
             }
             return false;
+        }
+
+        public void AddValue(SpatialPredicateTypes type, int value)
+        {
+            switch (type)
+            {
+                case SpatialPredicateTypes.Proximity:
+                    Proximity |= (SpatialPredicateProximity)value;
+                    break;
+                case SpatialPredicateTypes.Directionality:
+                    Directionality |= (SpatialPredicateDirectionality)value;
+                    break;
+                case SpatialPredicateTypes.Adjacency:
+                    Adjacency |= (SpatialPredicateAdjacency)value;
+                    break;
+                case SpatialPredicateTypes.Orientations:
+                    Orientations |= (SpatialPredicateOrientations)value;
+                    break;
+                case SpatialPredicateTypes.Assembly:
+                    Assembly |= (SpatialPredicateAssembly)value;
+                    break;
+                case SpatialPredicateTypes.Contacts:
+                    Contacts |= (SpatialPredicateContacts)value;
+                    break;
+                case SpatialPredicateTypes.Comparability:
+                    Comparability |= (SpatialPredicateComparability)value;
+                    break;
+                case SpatialPredicateTypes.Similarity:
+                    Similarity |= (SpatialPredicateSimilarity)value;
+                    break;
+                case SpatialPredicateTypes.Visibility:
+                    Visibility |= (SpatialPredicateVisibility)value;
+                    break;
+                case SpatialPredicateTypes.Geography:
+                    Geography |= (SpatialPredicateGeography)value;
+                    break;
+                case SpatialPredicateTypes.Sectors:
+                    Sectors |= (SpatialPredicateSectors)value;
+                    break;
+            }
         }
 
         public static SpatialPredicate CreateSpatialPredicate(SpatialPredicateTypes type, int value)
@@ -237,6 +299,9 @@ namespace SRcsharp.Library
                 case SpatialPredicateTypes.Geography:
                     pred.Geography = (SpatialPredicateGeography)value;
                     break;
+                case SpatialPredicateTypes.Sectors:
+                    pred.Sectors = (SpatialPredicateSectors)value;
+                    break;
             }
 
             return pred;
@@ -267,6 +332,8 @@ namespace SRcsharp.Library
                 return typeof(SpatialPredicateVisibility);
             if (Enum.GetNames(typeof(SpatialPredicateGeography)).Contains(value))
                 return typeof(SpatialPredicateGeography);
+            if (Enum.GetNames(typeof(SpatialPredicateSectors)).Contains(value))
+                return typeof(SpatialPredicateSectors);
 
             return null;
 
@@ -297,6 +364,8 @@ namespace SRcsharp.Library
                 return SpatialPredicateTypes.Visibility;
             if (Enum.GetNames(typeof(SpatialPredicateGeography)).Contains(value))
                 return SpatialPredicateTypes.Geography;
+            if (Enum.GetNames(typeof(SpatialPredicateSectors)).Contains(value))
+                return SpatialPredicateTypes.Sectors;
 
             return SpatialPredicateTypes.None;
         }
@@ -324,6 +393,8 @@ namespace SRcsharp.Library
                 pred.Visibility = (SpatialPredicateVisibility)value;
             if (typeof(T) == typeof(SpatialPredicateGeography))
                 pred.Geography = (SpatialPredicateGeography)value;
+            if (typeof(T) == typeof(SpatialPredicateSectors))
+                pred.Sectors = (SpatialPredicateSectors)value;
 
             return pred;
         }
@@ -343,6 +414,7 @@ namespace SRcsharp.Library
             Similarity = 1 << 7,
             Visibility = 1<<8,
             Geography = 1<<9,
+            Sectors = 1<<10
         }
 
         public SpatialPredicateProximity Proximity { get; set; }
@@ -355,6 +427,7 @@ namespace SRcsharp.Library
         public SpatialPredicateSimilarity Similarity { get; set; }
         public SpatialPredicateVisibility Visibility { get; set; }
         public SpatialPredicateGeography Geography { get; set; }
+        public SpatialPredicateSectors Sectors { get; set; }
 
 
         [Flags]
@@ -515,7 +588,7 @@ namespace SRcsharp.Library
         [SpatialPredicateEnumAttribute]
         public enum SpatialPredicateSectors
         {
-            Undefined = 0,
+            None = 0,
             I = 1 << 0,
             A = 1 << 1,
             B = 1 << 2,

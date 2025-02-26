@@ -145,7 +145,7 @@ namespace SRcsharp.Library
         }
 
         private ObjectConfidence _confidence;
-        [SpatialObjectProperty]
+        [SpatialObjectProperty(SpatialObjectPropertyType.DeclaredSpatial, true)]
         public ObjectConfidence Confidence
         {
             get { return _confidence; }
@@ -224,7 +224,7 @@ namespace SRcsharp.Library
             get
             {
                 if (_context != null)
-                    return -(float)(Yaw + (float)Math.Truncate((Math.Atan2((float)_context.North.DY, (float)_context.North.DX) * 180.0 / Math.PI) - 90.0) / 360);
+                    return -(float)(Yaw + (float)(Math.Atan2((float)_context.North.DY, (float)_context.North.DX) * 180.0 / Math.PI) - 90.0) % 360.0f;
                 return 0.0f;
 
             }
@@ -324,6 +324,17 @@ namespace SRcsharp.Library
             var props = typeof(SpatialObject).GetProperties().Where(
                 prop => Attribute.IsDefined(prop, typeof(SpatialObjectPropertyAttribute)) && types.Contains(prop.PropertyType)).
                 ToDictionary(prop => prop.Name);
+
+            var objProps = typeof(SpatialObject).GetProperties().Where(
+                prop => Attribute.IsDefined(prop, typeof(SpatialObjectPropertyAttribute)) && prop.GetCustomAttribute<SpatialObjectPropertyAttribute>().SearchNested);
+            foreach(var pi in objProps)
+            {
+                var adds = pi.PropertyType.GetProperties().Where(
+                prop => Attribute.IsDefined(prop, typeof(SpatialObjectPropertyAttribute)) && types.Contains(prop.PropertyType)).
+                ToDictionary(prop => pi.Name+"."+prop.Name);
+                adds.ToList().ForEach(x => props.Add(x.Key, x.Value));
+            }
+
             return props;
         }
 
@@ -332,6 +343,7 @@ namespace SRcsharp.Library
             BooleanAttributes = LoadAttributes(new Type[] { typeof(bool) });
             NumericAttributes = LoadAttributes(new Type[] { typeof(float), typeof(double), typeof(decimal), typeof(byte), typeof(short), typeof(int), typeof(long) });
             StringAttributes = LoadAttributes(new Type[] { typeof(string), typeof(Enum) });
+            
         }
 
         public SpatialObject(string id, float x=0.0f, float y=0.0f, float z=0.0f, float width = 1.0f, float height = 1.0f, float depth = 1.0f, float angle = 0.0f, string label = "", float confidence = 0.0f)
@@ -485,26 +497,35 @@ namespace SRcsharp.Library
         
         public Dictionary<string,object> AsDict()
         {
-            var res = new Dictionary<string,object>();
-            foreach(var pi in BooleanAttributes.Values)
-            {
-                res.Add(pi.Name, pi.GetValue(this));
-            }
-            foreach (var pi in NumericAttributes.Values)
-            {
-                res.Add(pi.Name, pi.GetValue(this));
-            }
-            foreach (var pi in StringAttributes.Values)
-            {
-                res.Add(pi.Name, pi.GetValue(this));
-            }
+            var res = new Dictionary<string, object>();
+            AddAsDict(res, BooleanAttributes);
+            AddAsDict(res, NumericAttributes);
+            AddAsDict(res, StringAttributes);
 
-            if(_data != null)
+            if (_data != null)
             {
                 _data.ToList().ForEach(x => res.Add(x.Key, x.Value));
             } 
 
             return res;
+        }
+
+        private void AddAsDict(Dictionary<string,object> values, Dictionary<string,PropertyInfo> properties)
+        {
+            foreach (var kvp in properties)
+            {
+                object obj = this;
+                string pre = "";
+                if (kvp.Key.Contains("."))
+                {
+                    pre = kvp.Key.Split(".").First();
+                    var prop = typeof(SpatialObject).GetProperties().Where(prop => prop.Name == pre).First();
+                    pre += ".";
+                    obj = prop.GetValue(this);
+                }
+
+                values.Add(pre+kvp.Value.Name, kvp.Value.GetValue(obj));
+            }
         }
 
         public Dictionary<string, object> ToAny()
@@ -1296,8 +1317,8 @@ namespace SRcsharp.Library
                         else
                             ylap = Math.Abs(maxY);
                     }
-                    float xlap = ComputeOverlap(minX, maxX, _width);
-                    float zlap = ComputeOverlap(minZ, maxZ, _depth);
+                    float xlap = ComputeOverlap(minX, maxX, _width, true);
+                    float zlap = ComputeOverlap(minZ, maxZ, _depth, false);
 
                     // Check for touching or meeting relations based on overlap
                     if (minY < _height + Adjustment.MaxGap && maxY > -Adjustment.MaxGap)
@@ -1390,7 +1411,8 @@ namespace SRcsharp.Library
             if (centerZone != BBoxSectors.Inside)
             {
                 // Check if the angle is aligned within a certain tolerance
-                if (Math.Abs(Math.Truncate(theta/(Math.PI / 2.0f))) < Adjustment.MaxAngleDelta)
+                //if (Math.Abs(Math.Truncate(theta/(Math.PI / 2.0f))) < Adjustment.MaxAngleDelta)
+                if (Math.Abs(theta % (Math.PI / 2.0f)) < Adjustment.MaxAngleDelta)
                 {
                     aligned = true;
                 }
@@ -1806,7 +1828,7 @@ namespace SRcsharp.Library
             var localCenter = ConvertIntoLocal(subject.Center);
             var centerZone = IsSectorOf(localCenter, nearBy, epsilon);
             var theta = subject.Angle - _angle;
-            var pred = SpatialPredicate.CreateSpatialPredicateByName(centerZone.ToString(), false);
+            var pred = SpatialPredicate.CreateSpatialPredicateByName(BBoxSector.GetCombinedName(centerZone), false);
             return new SpatialRelation(subject, pred, this, centerDistance, theta);
         }
 
@@ -1941,7 +1963,7 @@ namespace SRcsharp.Library
             return result;
         }
 
-        private float ComputeOverlap(float min, float max, float size)
+        private float ComputeOverlap(float min, float max, float size, bool adjust)
         {
             // Compute overlap in one dimension (x, y, or z)
             float overlap = size;
@@ -1953,7 +1975,7 @@ namespace SRcsharp.Library
                 }
                 else
                 {
-                    if (min > -size / 2.0f - Adjustment.MaxGap)
+                    if ((adjust && min > -size / 2.0f - Adjustment.MaxGap) || (!adjust && min > -size / 2.0f))
                     {
                         overlap = Math.Abs(size / 2.0f - min);
                     }

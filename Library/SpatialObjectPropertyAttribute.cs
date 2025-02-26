@@ -12,10 +12,12 @@ namespace SRcsharp.Library
     public class SpatialObjectPropertyAttribute : System.Attribute
     {
         public SpatialObjectPropertyType Type;
+        public bool SearchNested;
 
-        public SpatialObjectPropertyAttribute(SpatialObjectPropertyType type)
+        public SpatialObjectPropertyAttribute(SpatialObjectPropertyType type, bool searchNested)
         {
             Type = type;
+            SearchNested = searchNested;
         }
 
         public SpatialObjectPropertyAttribute() { }
