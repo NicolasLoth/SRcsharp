@@ -37,7 +37,7 @@ namespace SRcsharp.Library
         }
 
         static DataTable cDT = new DataTable();
-        static bool CompEval(string expression)
+        public static bool CompEval(string expression)
         {
             return (bool)cDT.Compute(expression, "");
         }

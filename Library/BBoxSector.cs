@@ -85,12 +85,12 @@ namespace SRcsharp.Library
             return BBoxCombinations.Where(comb => comb.Key == sectors).Select(comb => comb.Value).First();
         }
 
-        public static int GetDivergencies(this BBoxSectors bboxSectors)
-        {
-            if (bboxSectors.HasFlag(BBoxSectors.Inside))
-                return 0;
-            return BitOperations.PopCount((ulong)bboxSectors);
-        }
+        //public static int GetDivergencies(this BBoxSectors bboxSectors)
+        //{
+        //    if (bboxSectors.HasFlag(BBoxSectors.Inside))
+        //        return 0;
+        //    return BitOperations.PopCount((ulong)bboxSectors);
+        //}
 
         public static string ToString(this BBoxSectors bboxSectors)
         {

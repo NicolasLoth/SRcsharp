@@ -144,7 +144,8 @@ namespace SRcsharp.Library
             {
                 var so = Fact.BaseObjects[i];
                 var cond = ReplaceVariables(condition, so);
-                result = Evaluator.XEval(cond);
+                cond = cond.Replace("==", "=");
+                result = Evaluator.CompEval(cond);
                 if (result)
                 {
                     adds.Add(i);
@@ -236,7 +237,7 @@ namespace SRcsharp.Library
                                 cond = cond.Replace(predicate, "false");
                             }
                         }
-                        bool result = Evaluator.XEval(cond);
+                        bool result = Evaluator.CompEval(cond);
                         if (result)
                         {
                             Add(j);
@@ -279,7 +280,7 @@ namespace SRcsharp.Library
                             }
                         }
 
-                        bool result = Evaluator.XEval(cond);
+                        bool result = Evaluator.CompEval(cond);
                         if (result)
                         {
                             var result2 = FilterInternal(new List<int>() { j }, conditions).Any();
