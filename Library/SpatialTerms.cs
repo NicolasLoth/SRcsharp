@@ -19,9 +19,9 @@ namespace SRcsharp.Library
         }
 
 
-        private PredicateTerm[] _terms; 
+        private List<PredicateTerm> _terms; 
 
-        public PredicateTerm[] Terms
+        public List<PredicateTerm> Terms
 		{
 			get { return _terms; }
 			set { _terms = value; }
@@ -29,7 +29,7 @@ namespace SRcsharp.Library
 
         public SpatialTerms()
         {
-            _terms = new PredicateTerm[0];
+            _terms = new List<PredicateTerm>();
             _terms = LoadPredicateTerms();
         }
 
@@ -121,10 +121,10 @@ namespace SRcsharp.Library
 
 
 
-        public PredicateTerm[] LoadPredicateTerms(string jsonFilePath = "spatialterms.json")
+        public List<PredicateTerm> LoadPredicateTerms(string jsonFilePath = "spatialterms.json")
         {
             var json = File.ReadAllText(jsonFilePath);
-            _terms = JsonConvert.DeserializeObject<PredicateTerm[]>(json, new SpatialPredicateTypeConverter());
+            _terms = JsonConvert.DeserializeObject<List<PredicateTerm>>(json, new SpatialPredicateTypeConverter());
             if(_terms == null)
             {
                 throw new NotImplementedException("Error reading predicate terms config file");
@@ -152,7 +152,7 @@ namespace SRcsharp.Library
 
             public override bool CanConvert(Type objectType)
             {
-                throw new NotImplementedException();
+                return objectType == typeof(SpatialPredicate);
             }
         }
 

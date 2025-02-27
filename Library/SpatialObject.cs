@@ -755,7 +755,7 @@ namespace SRcsharp.Library
             var points = new List<CGPoint>() { p0, p1, p2, p3 };
             if (!local)
             {
-                points.ForEach(p => p.Rotate(-_angle));
+                points.ForEach(p => p = p.Rotate(-_angle));
                 vector = _position;
             }
             var res = points.Select(p => new SCNVector3(p.X + vector.X, vector.Y, p.Y + vector.Z));
@@ -773,7 +773,7 @@ namespace SRcsharp.Library
             var points = new List<CGPoint>() { p0, p1, p2, p3 };
             if (!local)
             {
-                points.ForEach(p => p.Rotate(-_angle));
+                points.ForEach(p => p=  p.Rotate(-_angle));
                 vector = _position;
             }
             var res = points.Select(p => new SCNVector3(p.X + vector.X, vector.Y + _height, p.Y + vector.Z));
@@ -789,7 +789,7 @@ namespace SRcsharp.Library
             var points = new List<CGPoint>() { p0, p1 };
             if (!local)
             {
-                points.ForEach(p => p.Rotate(-_angle));
+                points.ForEach(p => p = p.Rotate(-_angle));
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[4];
@@ -809,7 +809,7 @@ namespace SRcsharp.Library
             var points = new List<CGPoint>() { p0, p1 };
             if (!local)
             {
-                points.ForEach(p => p.Rotate(-_angle));
+                points.ForEach(p => p = p.Rotate(-_angle));
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[4];
@@ -829,7 +829,7 @@ namespace SRcsharp.Library
             var points = new List<CGPoint>() { p0, p1 };
             if (!local)
             {
-                points.ForEach(p => p.Rotate(-_angle));
+                points.ForEach(p => p = p.Rotate(-_angle));
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[4];
@@ -849,7 +849,7 @@ namespace SRcsharp.Library
             var points = new List<CGPoint>() { p0, p1 };
             if (!local)
             {
-                points.ForEach(p => p.Rotate(-_angle));
+                points.ForEach(p => p = p.Rotate(-_angle));
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[4];
@@ -871,7 +871,7 @@ namespace SRcsharp.Library
             var points = new List<CGPoint>() { p0, p1, p2, p3 };
             if (!local)
             {
-                points.ForEach(p => p.Rotate(-_angle));
+                points.ForEach(p => p = p.Rotate(-_angle));
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[8];
