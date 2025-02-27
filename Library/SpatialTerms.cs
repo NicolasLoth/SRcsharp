@@ -33,6 +33,13 @@ namespace SRcsharp.Library
         //    _terms = LoadPredicateTerms();
         //}
 
+        public SpatialTerms()
+        {
+            _terms = new PredicateTerm[0];
+            LoadPredicateTerms();
+        }
+
+
 
         public SpatialPredicate? GetPredicate(string name)
         {

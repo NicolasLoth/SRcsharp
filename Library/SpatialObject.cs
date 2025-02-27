@@ -311,19 +311,19 @@ namespace SRcsharp.Library
 
         #endregion
 
-        //public static string[] BooleanAttributesArray = new string[] { "Immobile", "Moving", "Focused", "Visible", "Equilateral", "Thin", "Long", "Real", "Virtual", "Conceptual" };
-        //public static string[] NumericAttributesArray = new string[] { "Width", "Height", "Depth", "W", "H", "D", "Position", "X", "Y", "Z", "Angle", "Confidence" };
-        //public static string[] StringAttributesArray = new string[] { "Id", "Label", "Type", "Supertype", "Existence", "Cause", "Shape", "Look" };
-
+        public static Dictionary<string, PropertyInfo> AllAttributes;
         public static Dictionary<string, PropertyInfo> BooleanAttributes;
         public static Dictionary<string, PropertyInfo> NumericAttributes;
         public static Dictionary<string, PropertyInfo> StringAttributes;
 
         private static Dictionary<string, PropertyInfo> LoadAttributes(Type[] types)
         {
+            var res = new Dictionary<string, PropertyInfo>(StringComparer.InvariantCultureIgnoreCase);
+
             var props = typeof(SpatialObject).GetProperties().Where(
                 prop => Attribute.IsDefined(prop, typeof(SpatialObjectPropertyAttribute)) && types.Contains(prop.PropertyType)).
                 ToDictionary(prop => prop.Name);
+            props.ToList().ForEach(kvp => res.Add(kvp.Key, kvp.Value));
 
             var objProps = typeof(SpatialObject).GetProperties().Where(
                 prop => Attribute.IsDefined(prop, typeof(SpatialObjectPropertyAttribute)) && prop.GetCustomAttribute<SpatialObjectPropertyAttribute>().SearchNested);
@@ -332,10 +332,10 @@ namespace SRcsharp.Library
                 var adds = pi.PropertyType.GetProperties().Where(
                 prop => Attribute.IsDefined(prop, typeof(SpatialObjectPropertyAttribute)) && types.Contains(prop.PropertyType)).
                 ToDictionary(prop => pi.Name+"."+prop.Name);
-                adds.ToList().ForEach(x => props.Add(x.Key, x.Value));
+                adds.ToList().ForEach(x => res.Add(x.Key, x.Value));
             }
 
-            return props;
+            return res;
         }
 
         static SpatialObject()
@@ -343,7 +343,10 @@ namespace SRcsharp.Library
             BooleanAttributes = LoadAttributes(new Type[] { typeof(bool) });
             NumericAttributes = LoadAttributes(new Type[] { typeof(float), typeof(double), typeof(decimal), typeof(byte), typeof(short), typeof(int), typeof(long) });
             StringAttributes = LoadAttributes(new Type[] { typeof(string), typeof(Enum) });
-            
+            AllAttributes = new Dictionary<string, PropertyInfo>(StringComparer.InvariantCultureIgnoreCase);
+            BooleanAttributes.ToList().ForEach(kvp => AllAttributes.Add(kvp.Key, kvp.Value));
+            NumericAttributes.ToList().ForEach(kvp => AllAttributes.Add(kvp.Key, kvp.Value));
+            StringAttributes.ToList().ForEach(kvp => AllAttributes.Add(kvp.Key, kvp.Value));
         }
 
         public SpatialObject(string id, float x=0.0f, float y=0.0f, float z=0.0f, float width = 1.0f, float height = 1.0f, float depth = 1.0f, float angle = 0.0f, string label = "", float confidence = 0.0f)
@@ -382,9 +385,31 @@ namespace SRcsharp.Library
             return -1;
         }
 
-        public static bool IsBoolean(string attribute)
+
+        public static PropertyInfo GetPropertyByName(string attribute)
         {
-            return BooleanAttributes.ContainsKey(attribute);
+            if (AllAttributes.ContainsKey(attribute))
+                return AllAttributes[attribute];
+
+            return null;
+        }
+
+
+        public object GetPropertyValue(string attribute)
+        {
+            if (AllAttributes.ContainsKey(attribute))
+                return AllAttributes[attribute].GetValue(this);
+            return null;
+        }
+
+        public bool SetPropertyByName(string attribute,object value)
+        {
+            if (AllAttributes.ContainsKey(attribute))
+            {
+                AllAttributes[attribute].SetValue(this, value);
+                return true;
+            }
+            return false;
         }
 
         public static SpatialObject CreateDetectedObject(string id, string label = "", float width = 1.0f, float height = 1.0f, float depth = 1.0f)
@@ -478,29 +503,29 @@ namespace SRcsharp.Library
             _data[key] = value;
         }
 
-        public float DataValue(string key)
-        {
-            if (_data != null && _data.ContainsKey(key))
-            {
-                var value = _data[key];
-                if (value != null)
-                {
-                    return (float)value;
-                }
-                //TODO: convert to NSNumber???
-                //if let val = value as? NSNumber {
-                //    return val.floatValue
-                //}
-            }
-            return 0.0f;
-        }
-        
+        //public float DataValue(string key)
+        //{
+        //    if (_data != null && _data.ContainsKey(key))
+        //    {
+        //        var value = _data[key];
+        //        if (value != null)
+        //        {
+        //            return (float)value;
+        //        }
+        //        //TODO: convert to NSNumber???
+        //        //if let val = value as? NSNumber {
+        //        //    return val.floatValue
+        //        //}
+        //    }
+        //    return 0.0f;
+        //}
+
         public Dictionary<string,object> AsDict()
         {
             var res = new Dictionary<string, object>();
-            AddAsDict(res, BooleanAttributes);
-            AddAsDict(res, NumericAttributes);
-            AddAsDict(res, StringAttributes);
+            AddAsDict(res, AllAttributes);
+            //AddAsDict(res, NumericAttributes);
+            //AddAsDict(res, StringAttributes);
 
             if (_data != null)
             {
@@ -1924,21 +1949,8 @@ namespace SRcsharp.Library
             return result;
         }
 
-        public float CalcRelationValue(string relval, List<int> pre)
+        public object CalcRelationValue(string predicate, string property, List<int> pre)
         {
-            var list = relval.Split('.');
-            for (int i = 0; i < list.Length; i++)
-            {
-                list[i] = list[i].Trim(); // Trim whitespaces and newlines
-            }
-
-            if (list.Length != 2 && _context == null)
-            {
-                return 0.0f;
-            }
-
-            string predicate = list[0];
-            string attribute = list[1];
             var result = 0.0f;
 
             // FIXME: Take min instead of last?
@@ -1949,14 +1961,11 @@ namespace SRcsharp.Library
                 {
                     if (rel.Subject == this)
                     {
-                        if (attribute == "Angle")
-                        {
-                            result = (float)rel.Angle;
-                        }
-                        else
-                        {
-                            result = rel.Delta;
-                        }
+                        var pi = typeof(SpatialRelation).GetProperties().Where(pi => pi.Name.ToLower() == property.ToLower()).First();
+                        if (pi == null)
+                            return null;
+                        return pi.GetValue(rel);
+
                     }
                 }
             }

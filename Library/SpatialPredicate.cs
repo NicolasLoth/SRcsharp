@@ -618,10 +618,10 @@ namespace SRcsharp.Library
             BRU = 1 << 26
         }
 
-        public override bool Equals(object obj)
-        {
-            return ((SpatialPredicate)obj).Equals(this);
-        }
+        //public override bool Equals(object obj)
+        //{
+        //    return ((SpatialPredicate)obj).Equals(this);
+        //}
 
         public override int GetHashCode()
         {

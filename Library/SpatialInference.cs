@@ -4,6 +4,7 @@ namespace SRcsharp.Library
 {
     using System;
     using System.Collections.Generic;
+    using System.Data;
     using System.Linq;
     using static SRcsharp.Library.SpatialInference;
 
@@ -119,24 +120,8 @@ namespace SRcsharp.Library
 
         private List<int> FilterInternal(List<int> indices, string condition)
         {
-            //throw new NotImplementedException();
 
             var adds = new List<int>();
-            //var subs = condition.Split(FilterOperationLiterals, StringSplitOptions.RemoveEmptyEntries);
-            //var propertyString = subs[0];
-            //var valueString = subs[1];
-            //var op = FilterOperations.None;
-            //for (int i = 0; i < FilterOperationLiterals.Length; i++)
-            //{
-            //    if (condition.Contains(FilterOperationLiterals[i]))
-            //        op = (FilterOperations)i + 1;
-            //}
-            //var boolOp = BooleanOperations.None;
-            //for (int i = 0; i < BooleanOperationLiterals.Length; i++)
-            //{
-            //    if (condition.Contains(BooleanOperationLiterals[i]))
-            //        boolOp = (BooleanOperations)i + 1;
-            //}
 
             var result = false;
 
@@ -152,52 +137,18 @@ namespace SRcsharp.Library
                 }
             }
 
-            //foreach (var i in indices)
-            //{
-            //    var so = Fact.BaseObjects[i];
-            //    if (op != FilterOperations.None)
-            //    {
-            //        switch (op)
-            //        {
-            //            case FilterOperations.Equals:
-            //            case FilterOperations.DoubleEquals:
-            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) == 0);
-            //                break;
-            //            case FilterOperations.Smaller:
-            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) < 0);
-            //                break;
-            //            case FilterOperations.Greater:
-            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) > 0);
-            //                break;
-            //            case FilterOperations.SmallerEquals:
-            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) <= 0);
-            //                break;
-            //            case FilterOperations.GreaterEquals:
-            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) >= 0);
-            //                break;
-            //            case FilterOperations.NotEquals:
-            //            case FilterOperations.NotEquals2:
-            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) != 0);
-            //                break;
-            //        }
-            //    }
-            //    if (boolOp != BooleanOperations.None)
-            //    {
-            //        switch (boolOp)
-            //        {
-            //            case BooleanOperations.AND:
-            //                result = so.Any(kvp => kvp.Key == propertyString && ((IComparable)kvp.Value).CompareTo((IComparable)valueString) == 0);
-            //                break;
-            //        }
-            //    }
-            //    if (result)
-            //    {
-            //        adds.Add(i);
-            //    }
-            //}
 
             Succeeded = true;
             return adds;
+        }
+
+        private string ReplaceVariables(string condition, List<Dictionary<string, object>> so)
+        {
+            foreach(var dict in so)
+            {
+                condition = ReplaceVariables(condition, dict);
+            }
+            return condition;
         }
 
         private string ReplaceVariables(string condition, Dictionary<string, object> so)
@@ -302,17 +253,14 @@ namespace SRcsharp.Library
 
         public void Map(string assignments)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
 
             var list = assignments.Split(';').Select(a => a.Trim()).ToArray();
             var baseObjects = Fact.BaseObjects;
 
-            foreach (var i in Input)
+            foreach (var i in _input)
             {
                 var dict = new Dictionary<string, object>();
-
-
-
                 foreach (var assignment in list)
                 {
                     var kv = assignment.Split('=');
@@ -320,8 +268,13 @@ namespace SRcsharp.Library
                     {
                         var key = kv[0].Trim();
                         var expr = kv[1].Trim();
+
                         //var expression = new NSExpression(expr);
                         //var value = expression.ExpressionValueWith(baseObjects[i], null);
+                        //var value = expr; //TODO: evaluate boolean and mathematical statements
+                        var value = ReplaceVariables(expr, Fact.BaseObjects[i]);
+                        var res = new DataTable().Compute(value, ""); 
+                        Fact.Objects[i].SetPropertyByName(key, res);
 
                         //if (value != null)
                         //{
@@ -330,17 +283,16 @@ namespace SRcsharp.Library
                     }
                 }
 
-                Fact.Objects[i].FromAny(dict);
+                //Fact.Objects[i].FromAny(dict);
             }
-            Fact.Load();
-            Output = Input;
-            Succeeded = Output.Count > 0;
+            //Fact.Load();
+            _output = _input;
+            Succeeded = _output.Count > 0;
         }
 
         public void Calc(string assignments)
         {
-            throw new NotImplementedException();
-
+            //throw new NotImplementedException();
             var list = assignments.Split(';').Select(a => a.Trim()).ToArray();
 
             foreach (var assignment in list)
@@ -350,21 +302,28 @@ namespace SRcsharp.Library
                 {
                     var key = kv[0].Trim();
                     var expr = kv[1].Trim();
+
+                    var value = ReplaceVariables(expr, Fact.BaseObjects);
+                    var res = new DataTable().Compute(value, "");
+ 
+
                     //var expression = new NSExpression(expr);
                     //var value = expression.ExpressionValueWith(Fact.Base, null);
 
-                    //if (value != null)
-                    //{
-                    //    Fact.SetData(key, value);
-                    //}
+                    if (res != null)
+                    {
+                        Fact.SetData(key, res);
+                    }
                 }
             }
-            Output = Input;
-            Succeeded = Output.Count > 0;
+            _output = _input;
+            Succeeded = _output.Count > 0;
         }
 
         public void Slice(string range)
         {
+            if(Input.Count <= 0) { return; }
+
             Console.WriteLine("slice " + range);
 
             var str = range.Replace("..", ".");
@@ -376,15 +335,23 @@ namespace SRcsharp.Library
             if (list.Length > 0)
             {
                 lower = int.TryParse(list[0], out int result) ? result : 1;
-                lower = Math.Clamp(lower, 0, Input.Count);
-                lower = lower < 0 ? Input.Count + lower : lower - 1;
+                if(lower >= Input.Count)
+                    lower = Input.Count;
+                if (lower < 0)
+                    lower += Input.Count;
+                else
+                    lower -= 1;
             }
 
             if (list.Length > 1)
             {
                 upper = int.TryParse(list[1], out int result2) ? result2 : 1;
-                upper = Math.Clamp(upper, 0, Input.Count);
-                upper = upper < 0 ? Input.Count + upper : upper - 1;
+                if (upper >= Input.Count)
+                    upper = Input.Count;
+                if (upper < 0)
+                    upper += Input.Count;
+                else
+                    upper -= 1;
             }
             else
             {
@@ -396,10 +363,10 @@ namespace SRcsharp.Library
                 (lower, upper) = (upper, lower);
             }
 
-            var idxRange = new Range(lower, upper);
-            Console.WriteLine(idxRange);
+            //var idxRange = new Range(lower, upper);
+            //Console.WriteLine(idxRange);
 
-            Output = Input.GetRange(lower, upper - lower + 1);
+            Output = Input.GetRange(lower, upper-lower+1);
             Succeeded = Output.Count > 0;
         }
 
@@ -414,12 +381,13 @@ namespace SRcsharp.Library
             bool ascending = false;
             var inputObjects = new List<SpatialObject>();
 
-            foreach (var i in Input)
+            foreach (var i in _input)
             {
                 inputObjects.Add(Fact.Objects[i]);
             }
 
             var list = attribute.Split(' ').Select(a => a.Trim()).ToArray();
+            var prop = list[0];
             if (list.Length > 1)
             {
                 if (list[1] == "<")
@@ -432,37 +400,14 @@ namespace SRcsharp.Library
 
             if (ascending)
             {
-                switch (list[0])
-                {
-                    case "Width":
-                        sortedObjects = inputObjects.OrderBy(o => o.Width).ToList();
-                        break;
-                    case "Height":
-                        sortedObjects = inputObjects.OrderBy(o => o.Height).ToList();
-                        break;
-                    // Add other cases for attributes here
-                    default:
-                        sortedObjects = inputObjects.OrderBy(o => o.DataValue(list[0])).ToList();
-                        break;
-                }
+                sortedObjects = inputObjects.OrderBy(o => o.GetPropertyValue(prop)).ToList();
             }
             else
             {
-                switch (list[0])
-                {
-                    case "Width":
-                        sortedObjects = inputObjects.OrderByDescending(o => o.Width).ToList();
-                        break;
-                    case "Height":
-                        sortedObjects = inputObjects.OrderByDescending(o => o.Height).ToList();
-                        break;
-                    // Add other cases for attributes here
-                    default:
-                        sortedObjects = inputObjects.OrderByDescending(o => o.DataValue(list[0])).ToList();
-                        break;
-                }
+                sortedObjects = inputObjects.OrderByDescending(o => o.GetPropertyValue(prop)).ToList();
             }
 
+            _output.Clear();
             foreach (var obj in sortedObjects)
             {
                 var idx = Fact.Objects.IndexOf(obj);
@@ -471,21 +416,22 @@ namespace SRcsharp.Library
                     Add(idx);
                 }
             }
-            Succeeded = Output.Count > 0;
+            Succeeded = _output.Count > 0;
         }
 
-        public void SortByRelation(string attribute)
+        public void SortByRelation(string param)
         {
             bool ascending = false;
             var inputObjects = new List<SpatialObject>();
             var preIndices = Fact.Backtrace();
 
-            foreach (var i in Input)
+            foreach (var i in _input)
             {
                 inputObjects.Add(Fact.Objects[i]);
             }
 
-            var list = attribute.Split(' ').Select(a => a.Trim()).ToArray();
+            var list = param.Split(' ').Select(a => a.Trim()).ToArray();
+            var attribute = list[0];
             if (list.Length > 1)
             {
                 if (list[1] == "<")
@@ -493,18 +439,23 @@ namespace SRcsharp.Library
                     ascending = true;
                 }
             }
+            list = attribute.Split('.', StringSplitOptions.TrimEntries);
+            var pred = list[0];
+            var prop = list[1];
 
             List<SpatialObject> sortedObjects;
 
             if (ascending)
             {
-                sortedObjects = inputObjects.OrderBy(o => o.CalcRelationValue(attribute, preIndices)).ToList();
+                sortedObjects = inputObjects.OrderBy(o => o.CalcRelationValue(pred,prop, preIndices)).ToList();
             }
             else
             {
-                sortedObjects = inputObjects.OrderByDescending(o => o.CalcRelationValue(attribute, preIndices)).ToList();
+                sortedObjects = inputObjects.OrderByDescending(o => o.CalcRelationValue(pred,prop, preIndices)).ToList();
             }
 
+
+            _output.Clear();
             foreach (var obj in sortedObjects)
             {
                 var idx = Fact.Objects.IndexOf(obj);
@@ -514,7 +465,7 @@ namespace SRcsharp.Library
                 }
             }
 
-            Succeeded = Output.Count > 0;
+            Succeeded = _output.Count > 0;
         }
 
         public bool HasFailed()
@@ -543,34 +494,6 @@ namespace SRcsharp.Library
                 };
         }
 
-        //public static string AttributePredicate(string condition)
-        //{
-        //    string cond = condition.Trim();
-
-        //    // Iterate through boolean attributes and modify condition
-        //    foreach (var word in SpatialObject.BooleanAttributes.Keys)
-        //    {
-        //        int index = 0;
-        //        while ((index = cond.IndexOf(word, index)) != -1)
-        //        {
-        //            if (index + word.Length < cond.Length)
-        //            {
-        //                var ahead = cond.Substring(index + word.Length, Math.Min(5, cond.Length - index - word.Length));
-        //                if (!ahead.Contains("=") && !ahead.Contains("<") && !ahead.Contains(">"))
-        //                {
-        //                    cond = cond.Substring(0, index) + word + " == TRUE" + cond.Substring(index + word.Length);
-        //                }
-        //            }
-        //            else
-        //            {
-        //                cond = cond.Substring(0, index) + word + " == TRUE";
-        //            }
-        //            index += word.Length;
-        //        }
-        //    }
-
-        //    return cond;
-        //}
 
 
 
