@@ -439,7 +439,7 @@ namespace SRcsharp.Library
                     ascending = true;
                 }
             }
-            list = attribute.Split('.', StringSplitOptions.TrimEntries);
+            list = attribute.Split('.', StringSplitOptions.RemoveEmptyEntries);
             var pred = list[0];
             var prop = list[1];
 

@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace SRcsharp.Library
 {
-    public struct SpatialTerms
+    public class SpatialTerms
     {
 
         private static SpatialTerms _instance = new SpatialTerms();
@@ -27,16 +27,10 @@ namespace SRcsharp.Library
 			set { _terms = value; }
 		}
 
-        //public SpatialTerms()
-        //{
-        //    _terms = new PredicateTerm[0];
-        //    _terms = LoadPredicateTerms();
-        //}
-
         public SpatialTerms()
         {
             _terms = new PredicateTerm[0];
-            LoadPredicateTerms();
+            _terms = LoadPredicateTerms();
         }
 
 
@@ -139,21 +133,26 @@ namespace SRcsharp.Library
             
         }
 
-        public class SpatialPredicateTypeConverter : Newtonsoft.Json.JsonConverter<SpatialPredicate>
+        public class SpatialPredicateTypeConverter : Newtonsoft.Json.JsonConverter
         {
-            public override void WriteJson(JsonWriter writer, SpatialPredicate value, JsonSerializer serializer)
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
                 throw new NotImplementedException("We only load the configuration. The type will skip the converter.");
             }
 
-            public override SpatialPredicate ReadJson(JsonReader reader, Type objectType, SpatialPredicate existingValue, bool hasExistingValue, JsonSerializer serializer)
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
             {
-                if(reader.Value == null) { return new SpatialPredicate(); }
+                if (reader.Value == null) { return new SpatialPredicate(); }
 
                 string val = (string)reader.Value;
                 var pred = SpatialPredicate.CreateSpatialPredicateByName(val);
 
                 return pred;
+            }
+
+            public override bool CanConvert(Type objectType)
+            {
+                throw new NotImplementedException();
             }
         }
 
