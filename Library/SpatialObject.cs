@@ -905,13 +905,14 @@ namespace SRcsharp.Library
             var rotcos = Math.Cos(_angle);
             var x = vx * rotcos - vz * rotsin;
             var z = vx * rotsin + vz * rotcos;
+
             return new SCNVector3((float)x, pt.Y - _position.Y, (float)z);
         }
 
         public SCNVector3[] ConvertIntoLocal(SCNVector3[] pts)
         {
             var ptsList = pts.ToList();
-            ptsList.ForEach(pt => ConvertIntoLocal(pt));
+            ptsList.Select(pt => ConvertIntoLocal(pt));
             return ptsList.ToArray();
         }
 

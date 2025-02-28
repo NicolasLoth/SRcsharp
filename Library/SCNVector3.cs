@@ -51,7 +51,7 @@ namespace SRcsharp.Library
 
         public static SCNVector3 operator -(SCNVector3 left, SCNVector3 right)
         {
-            return new SCNVector3(left.RawValue + right.RawValue);
+            return new SCNVector3(left.RawValue - right.RawValue);
         }
         public static SCNVector3 operator *(SCNVector3 left, SCNVector3 right)
         {

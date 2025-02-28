@@ -41,7 +41,10 @@ namespace SRcsharp.Library
             var rotationCos = Math.Cos(radians);
             var x = ((X - pivot.X) * rotationCos - (Y - pivot.Y) * rotationSin) + pivot.X;
             var y = ((X - pivot.X) * rotationSin + (Y - pivot.Y) * rotationCos) + pivot.Y;
-            return new CGPoint((float)x, (float)y);
+            X = (float)x;
+            Y = (float)y;
+            return this;
+            //return new CGPoint((float)x, (float)y);
         }
 
 
