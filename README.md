@@ -1,10 +1,10 @@
-# SRswift: Spatial Reasoner in Swift
+# SRcsharp: Spatial Reasoner in C#
 
-> _A flexible 3D Spatial Reasoning library for iOS, macOS, and visionOS_
+> _A flexible 3D Spatial Reasoning library for Microsoft / Windows Ecosystem
 
 ## Features
 
-The SRswift library supports the following operations of the [__Spatial Reasoner Syntax__](https://github.com/metason/SpatialReasoner#syntax-of-spatial-inference-pipeline) to specify a spatial inference pipeline.
+The SRcharsp library supports the following operations of the [__Spatial Reasoner Syntax__](https://github.com/metason/SpatialReasoner#syntax-of-spatial-inference-pipeline) to specify a spatial inference pipeline.
 
 - [x] __adjust__: optional setup to adjust nearby, sector, and max deviation settings
 - [x] __deduce__: optional setup to specify relation categories to be deduced
@@ -28,8 +28,7 @@ See [__Docu on SpatialReasoner__](https://github.com/metason/SpatialReasoner) in
 
 ### Building and Integrating
 
-Use XCode package manager to import the SRswift library using the link to this repository:
-https://github.com/metason/SRswift.
+Use Visual Studio (Code) to import the SRcsharp library
 
 ## Tests
 
