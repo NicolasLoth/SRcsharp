@@ -36,6 +36,26 @@ namespace SRcsharp.Library
             return (double)(dt.Rows[0]["Eval"]);
         }
 
+        public static bool Eval(string expression)
+        {
+            bool? res = null;
+            try
+            {
+                res = CompEval(expression);
+            }
+            catch(Exception ex) 
+            {
+                res = XEval(expression);
+            }
+
+            if (!res.HasValue)
+            {
+                throw new Exception("Evaluation of expression failed: " + expression);
+            }
+
+            return res.Value;
+        }
+
         static DataTable cDT = new DataTable();
         public static bool CompEval(string expression)
         {

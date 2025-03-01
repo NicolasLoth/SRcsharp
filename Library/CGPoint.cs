@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-
+using System;
 
 namespace SRcsharp.Library
 {
@@ -18,10 +18,10 @@ namespace SRcsharp.Library
 		public float X { get { return _rawValue.X; } set { _rawValue.X = value; } }
         public float Y { get { return _rawValue.Y; } set { _rawValue.Y = value; } }
 
-        public CGPoint()
-        {
-            _rawValue = new Vector2();
-        }
+        //public CGPoint()
+        //{
+        //    _rawValue = new Vector2();
+        //}
 
         public CGPoint(float x, float y)
 		{

@@ -305,12 +305,15 @@ namespace SRcsharp.Library
             ((List<Dictionary<string, object>>)_base[SpatialReasonerBaseContentType.Chain]).Add(inference.AsDict());
         }
 
-        public List<int> Backtrace()
+        public List<int> Backtrace(int steps)
         {
+            var cnt = 0;
             foreach (var inf in _chain.ToArray().Reverse())
             {
+                cnt++;
                 if (inf.IsManipulating())
-                    return inf.Input;
+                    if(cnt == steps)
+                        return inf.Input; 
             }
             return null;
         }
@@ -910,14 +913,14 @@ namespace SRcsharp.Library
 
     }
 
-    public static class SpatialReasonerExtensions
-    { 
+    //public static class SpatialReasonerExtensions
+    //{ 
 
-        public static IEnumerable<SpatialObject> Pick(this IEnumerable<SpatialObject> so)
-        {
-            throw new NotImplementedException();
-        }
-    }
+    //    public static IEnumerable<SpatialObject> Pick(this IEnumerable<SpatialObject> so)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+    //}
 
 
 

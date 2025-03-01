@@ -103,6 +103,13 @@ namespace SRcsharp.Library
                 if (run)
                     Map(assignments);
             }
+            else if (operation.ToLower().StartsWith("reload("))
+            {
+                Reload();
+            }
+            else  {
+                _error = "Unknown inference operation: "+operation;
+            }
         }
 
         private void Add(int index)
@@ -130,7 +137,7 @@ namespace SRcsharp.Library
                 var so = Fact.Objects[i];
                 var cond = ReplaceVariables(condition, so);
                 cond = cond.Replace("==", "=");
-                result = Evaluator.CompEval(cond);
+                result = Evaluator.Eval(cond);
                 if (result)
                 {
                     adds.Add(i);
@@ -158,7 +165,7 @@ namespace SRcsharp.Library
                 if (condition.Contains(kvp.Key.ToLower()))
                 { 
 
-                    var obj = so.GetAttributeValue(kvp.Key);
+                    var obj = so.GetPropertyValue(kvp.Key);
 
                     if (SpatialObject.StringAttributes.ContainsKey(kvp.Key))
                         condition = condition.Replace(kvp.Key, "'" + obj.ToString() + "'", StringComparison.OrdinalIgnoreCase);
@@ -169,31 +176,6 @@ namespace SRcsharp.Library
             return condition;
         }
 
-        ////Old method via dict copy
-        //private string ReplaceVariables(string condition, List<Dictionary<string, object>> so)
-        //{
-        //    foreach(var dict in so)
-        //    {
-        //        condition = ReplaceVariables(condition, dict);
-        //    }
-        //    return condition;
-        //}
-
-        ////Old method via dict copy
-        //private string ReplaceVariables(string condition, Dictionary<string, object> so)
-        //{
-        //    foreach(var kvp in so)
-        //    {
-        //        if (condition.Contains(kvp.Key.ToLower()))
-        //        {
-        //            if(kvp.Value.GetType() == typeof(string))
-        //                condition = condition.Replace(kvp.Key, "'"+kvp.Value.ToString()+"'", StringComparison.OrdinalIgnoreCase);
-        //            else
-        //                condition = condition.Replace(kvp.Key, kvp.Value.ToString(), StringComparison.OrdinalIgnoreCase);
-        //        }
-        //    }
-        //    return condition;
-        //}
 
         public void Pick(string relations)
         {
@@ -217,7 +199,7 @@ namespace SRcsharp.Library
                                 cond = cond.Replace(predicate, "false");
                             }
                         }
-                        bool result = Evaluator.CompEval(cond);
+                        bool result = Evaluator.Eval(cond);
                         if (result)
                         {
                             Add(j);
@@ -260,7 +242,7 @@ namespace SRcsharp.Library
                             }
                         }
 
-                        bool result = Evaluator.CompEval(cond);
+                        bool result = Evaluator.Eval(cond);
                         if (result)
                         {
                             var result2 = FilterInternal(new List<int>() { j }, conditions).Any();
@@ -278,16 +260,203 @@ namespace SRcsharp.Library
         public void Produce(string terms)
         {
             Console.WriteLine(terms);
+            var list = terms.Split(':').Select(x => x.Trim()).ToList();
+            var assignments = "";
+            var rule = list[0];
+
+            if (list.Count > 1)
+            {
+                assignments = list[1];
+            }
+
+            var indices = new List<int>(); // new produced object indices
+            var newObjects = new List<SpatialObject>();
+
+            switch (rule)
+            {
+                case "group":
+                case "aggregate":
+                    if (Input.Count > 0)
+                    {
+                        
+                        var inputObjects = new List<SpatialObject>(Fact.Objects);
+
+                        var sortedObjects = inputObjects.OrderByDescending(o => o.Volume).ToList();
+                        var largestObject = sortedObjects.FirstOrDefault();
+                        float minY = 0f;
+                        float maxY = largestObject.Height;
+                        float minX = -largestObject.Width / 2f;
+                        float maxX = largestObject.Width / 2f;
+                        float minZ = -largestObject.Depth / 2f;
+                        float maxZ = largestObject.Depth / 2f;
+                        var groupId = "group:" + largestObject.Id;
+
+                        for (int j = 1; j < sortedObjects.Count; j++)
+                        {
+                            var localPts = largestObject.ConvertIntoLocal(sortedObjects[j].CalcPoints());
+                            foreach (var pt in localPts)
+                            {
+                                minX = Math.Min(minX, pt.X);
+                                maxX = Math.Max(maxX, pt.X);
+                                minY = Math.Min(minY, pt.Y);
+                                maxY = Math.Max(maxY, pt.Y);
+                                minZ = Math.Min(minZ, pt.Z);
+                                maxZ = Math.Max(maxZ, pt.Z);
+                            }
+                            groupId += "+" + sortedObjects[j].Id;
+                        }
+
+                        var w = maxX - minX;
+                        var h = maxY - minY;
+                        var d = maxZ - minZ;
+                        var dx = minX + w / 2f;
+                        var dy = minY / 2f;
+                        var dz = minZ + d / 2f;
+                        var objIdx = (int)Fact.IndexOf(groupId);
+                        var group = objIdx < 0 ? new SpatialObject(groupId) : Fact.Objects[objIdx];
+
+                        group.Position = largestObject.Position;
+                        group.RotShift(-largestObject.Angle, dx, dy, dz);
+                        group.Angle = largestObject.Angle;
+                        group.Width = w;
+                        group.Height = h;
+                        group.Depth = d;
+                        group.Cause = SREnums.ObjectCause.RuleProduced;
+
+                        if (objIdx < 0)
+                        {
+                            newObjects.Add(group);
+                            indices.Add(Fact.Objects.Count);
+                            Fact.Objects.Add(group);
+                        }
+                    }
+                    break;
+
+                case "copy":
+                case "duplicate":
+                    foreach (var i in Input)
+                    {
+                        var copyId = "copy:" + Fact.Objects[i].Id;
+                        var idx = (int)Fact.IndexOf(copyId);
+
+                        if (idx == -1)
+                        {
+                            idx = Fact.Objects.Count;
+                            var objIdx = (int)Fact.IndexOf(copyId);
+                            var template = objIdx < 0 ? new SpatialObject(Fact.Objects[i].Id) : Fact.Objects[objIdx];
+                            var copy = SpatialObject.Clone(template, copyId);
+                            //copy.FromAny(Fact.Objects[i].ToAny());
+                            //copy.Id = copyId;
+                            copy.Cause = SREnums.ObjectCause.RuleProduced;
+                            copy.Position = Fact.Objects[i].Position;
+                            copy.Angle = Fact.Objects[i].Angle;
+
+                            if (objIdx < 0)
+                            {
+                                newObjects.Add(copy);
+                                Fact.Objects.Add(copy);
+                                indices.Add(idx);
+                            }
+                        }
+                        else
+                        {
+                            indices.Add(idx);
+                        }
+                    }
+                    break;
+
+                case "by":
+                    var processedBys = new HashSet<string>();
+
+                    foreach (var i in Input)
+                    {
+                        var rels = Fact.RelationsWith(i, "by");
+
+                        foreach (var rel in rels)
+                        {
+                            var idx = (int)Fact.IndexOf(rel.Subject.Id);
+                            if (Input.Contains(idx) && !processedBys.Contains(rel.Subject.Id + "-" + Fact.Objects[i].Id))
+                            {
+                                var nearest = Fact.Objects[i].Position.Nearest(rel.Subject.CalcPoints());
+                                var byId = "by:" + Fact.Objects[i].Id + "-" + rel.Subject.Id;
+                                var objIdx = (int)Fact.IndexOf(byId);
+                                var obj = objIdx < 0 ? new SpatialObject(byId) : Fact.Objects[objIdx];
+
+                                obj.Cause = SREnums.ObjectCause.RuleProduced;
+                                obj.Position = nearest.FirstOrDefault();
+                                obj.Angle = Fact.Objects[i].Angle;
+
+                                var w = Math.Max(rel.Delta, Fact.Objects[i].Adjustment.MaxGap);
+                                obj.Width = w;
+                                obj.Depth = w;
+
+                                var h = rel.Subject.Height;
+                                if (nearest[0].X == nearest[1].X && nearest[0].Z == nearest[1].Z)
+                                {
+                                    h = nearest[1].Y - nearest[0].Y;
+                                }
+
+                                obj.Height = h;
+
+                                if (objIdx < 0)
+                                {
+                                    newObjects.Add(obj);
+                                    indices.Add(Fact.Objects.Count);
+                                    Fact.Objects.Add(obj);
+                                }
+
+                                processedBys.Add(Fact.Objects[i].Id + "-" + rel.Subject.Id);
+                            }
+                        }
+                    }
+                    break;
+
+                default:
+                    Error += ($"Unknown {rule} rule in produce()");
+                    return;
+            }
+
+            if (indices.Any())
+            {
+                Fact.Objects.AddRange(newObjects);
+                if (!string.IsNullOrEmpty(assignments))
+                {
+                    Assign(assignments, indices);
+                }
+
+                _output = _input;
+                foreach (var i in indices)
+                {
+                    if (!_output.Contains(i))
+                    {
+                        _output.Add(i);
+                    }
+                }
+            }
+            else
+            {
+                _output = _input;
+            }
+
+            Fact.Load();
+            Succeeded = string.IsNullOrEmpty(Error);
         }
 
         public void Map(string assignments)
         {
+            Assign(assignments, _input);
+            Fact.Load();
+            _output = _input;
+            Succeeded = _output.Count > 0;
+        }
+
+        public void Assign(string assignments, List<int> indices)
+        {
             //throw new NotImplementedException();
 
             var list = assignments.Split(';').Select(a => a.Trim()).ToArray();
-            //var baseObjects = Fact.BaseObjects;
 
-            foreach (var i in _input)
+            foreach (var i in indices)
             {
                 var dict = new Dictionary<string, object>();
                 foreach (var assignment in list)
@@ -448,26 +617,34 @@ namespace SRcsharp.Library
             Succeeded = _output.Count > 0;
         }
 
-        public void SortByRelation(string param)
+        public void SortByRelation(string param, int backtraceSteps = 1)
         {
             bool ascending = false;
-            var inputObjects = new List<SpatialObject>();
-            var preIndices = Fact.Backtrace();
-
-            foreach (var i in _input)
-            {
-                inputObjects.Add(Fact.Objects[i]);
-            }
+            var inputObjects = new List<SpatialObject>(Fact.Objects);
+            var steps = backtraceSteps;
+            
 
             var list = param.Split(' ').Select(a => a.Trim()).ToArray();
             var attribute = list[0];
             if (list.Length > 1)
             {
-                if (list[1] == "<")
+                foreach(var sub in list)
                 {
-                    ascending = true;
+                    if (sub == "<")
+                    {
+                        ascending = true;
+                    }
+                    else
+                    {
+                        int nsteps = -1;
+                        if(int.TryParse(sub, out nsteps))
+                        {
+                            steps = nsteps;
+                        }
+                    }
                 }
             }
+            var preIndices = Fact.Backtrace(steps);
             list = attribute.Split('.', StringSplitOptions.RemoveEmptyEntries);
             var pred = list[0];
             var prop = list[1];
@@ -496,6 +673,14 @@ namespace SRcsharp.Library
 
             Succeeded = _output.Count > 0;
         }
+
+        public void Reload()
+        {
+            Fact.SyncToObjects();
+            Fact.Load();
+            Succeeded = _output.Count > 0;
+        }
+
 
         public bool HasFailed()
         {

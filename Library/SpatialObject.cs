@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Reflection;
 using static SRcsharp.Library.SpatialPredicate;
 using static SRcsharp.Library.SREnums;
-using System.Reflection.Metadata;
 
 namespace SRcsharp.Library
 {
@@ -302,12 +301,12 @@ namespace SRcsharp.Library
         [SpatialObjectProperty]
         public double UpdateInterval { get { return DateTime.Now.Subtract(_updated).TotalSeconds; } }
 
-        public SpatialAdjustment Adjustment 
-        { 
-            get 
-            { 
-                return _context != null ? _context.Adjustment : SpatialAdjustment.DefaultAdjustment; 
-            } 
+        public SpatialAdjustment Adjustment
+        {
+            get
+            {
+                return _context != null ? _context.Adjustment : SpatialAdjustment.DefaultAdjustment;
+            }
         }
 
         #endregion
@@ -329,11 +328,11 @@ namespace SRcsharp.Library
 
             var objProps = typeof(SpatialObject).GetProperties().Where(
                 prop => Attribute.IsDefined(prop, typeof(SpatialObjectPropertyAttribute)) && prop.GetCustomAttribute<SpatialObjectPropertyAttribute>().SearchNested);
-            foreach(var pi in objProps)
+            foreach (var pi in objProps)
             {
                 var adds = pi.PropertyType.GetProperties().Where(
                 prop => Attribute.IsDefined(prop, typeof(SpatialObjectPropertyAttribute)) && types.Contains(prop.PropertyType)).
-                ToDictionary(prop => pi.Name+"."+prop.Name);
+                ToDictionary(prop => pi.Name + "." + prop.Name);
                 adds.ToList().ForEach(x =>
                 {
                     res.Add(x.Key, x.Value);
@@ -342,26 +341,6 @@ namespace SRcsharp.Library
             }
 
             return res;
-        }
-
-        public object GetAttributeValue(string property)
-        {
-            if (!AllAttributes.ContainsKey(property)) { return null; }
-
-            object obj = null;
-            if (SpatialObject.NestedAttributes.ContainsKey(property))
-            {
-                obj = this;
-                foreach (var pi in SpatialObject.NestedAttributes[property])
-                {
-                    obj = pi.GetValue(obj);
-                }
-            }
-            else
-            {
-                obj = AllAttributes[property].GetValue(this);
-            }
-            return obj;
         }
 
         static SpatialObject()
@@ -376,10 +355,10 @@ namespace SRcsharp.Library
             StringAttributes.ToList().ForEach(kvp => AllAttributes.Add(kvp.Key, kvp.Value));
         }
 
-        public SpatialObject(string id, float x=0.0f, float y=0.0f, float z=0.0f, float width = 1.0f, float height = 1.0f, float depth = 1.0f, float angle = 0.0f, string label = "", float confidence = 0.0f)
+        public SpatialObject(string id, float x = 0.0f, float y = 0.0f, float z = 0.0f, float width = 1.0f, float height = 1.0f, float depth = 1.0f, float angle = 0.0f, string label = "", float confidence = 0.0f)
             : this(id, new SCNVector3(x, y, z), width, height, depth, angle, label, confidence)
-        { 
-            
+        {
+
         }
 
         public SpatialObject(string id, SCNVector3 position, float width = 1.0f, float height = 1.0f, float depth = 1.0f, float angle = 0.0f, string label = "", float confidence = 0.0f)
@@ -398,9 +377,22 @@ namespace SRcsharp.Library
         }
 
         public SpatialObject(string id) :
-            this(id, SCNVector3.Zero, 1.0f, 1.0f, 1.0f, 0.0f, "", 0.0f)
-        {
+            this(id, SCNVector3.Zero, 1.0f, 1.0f, 1.0f, 0.0f, "", 0.0f) { }
 
+        public static SpatialObject Clone(SpatialObject so, string id)
+        {
+            var cloney = new SpatialObject(id);
+            foreach(var attribute in AllAttributes)
+            {
+                if(NestedAttributes.ContainsKey(attribute.Key))
+                {
+                   var baseProp = NestedAttributes[attribute.Key].First();
+                   if(baseProp.GetValue(cloney) == null)
+                        baseProp.SetValue(cloney, baseProp.GetType().GetConstructor(new Type[0]).Invoke(new object[0]));
+                }
+                cloney.SetPropertyByName(attribute.Key, so.GetPropertyValue(attribute.Key));
+            }
+            return cloney;
         }
 
         public int Index()
@@ -412,6 +404,25 @@ namespace SRcsharp.Library
             return -1;
         }
 
+        public object GetPropertyValue(string attribute)
+        {
+            if (!AllAttributes.ContainsKey(attribute) || !AllAttributes[attribute].CanRead) { return null; }
+
+            object obj = null;
+            if (SpatialObject.NestedAttributes.ContainsKey(attribute))
+            {
+                obj = this;
+                foreach (var pi in SpatialObject.NestedAttributes[attribute])
+                {
+                    obj = pi.GetValue(obj);
+                }
+            }
+            else
+            {
+                obj = AllAttributes[attribute].GetValue(this);
+            }
+            return obj;
+        }
 
         public static PropertyInfo GetPropertyByName(string attribute)
         {
@@ -422,18 +433,25 @@ namespace SRcsharp.Library
         }
 
 
-        public object GetPropertyValue(string attribute)
-        {
-            if (AllAttributes.ContainsKey(attribute))
-                return AllAttributes[attribute].GetValue(this);
-            return null;
-        }
-
         public bool SetPropertyByName(string attribute,object value)
         {
-            if (AllAttributes.ContainsKey(attribute))
+            if (AllAttributes.ContainsKey(attribute) && AllAttributes[attribute].CanWrite)
             {
-                AllAttributes[attribute].SetValue(this, value);
+                if (NestedAttributes.ContainsKey(attribute))
+                {
+                    var obj = (object)this;
+                    for(int i = 0; i < NestedAttributes[attribute].Count - 1; i++)
+                    {
+                        obj = NestedAttributes[attribute][i].GetValue(obj);
+                    }
+                    var prop = NestedAttributes[attribute].Last();
+                    prop.SetValue(obj, Convert.ChangeType(value,prop.PropertyType));
+                }
+                else
+                {
+                    var prop = AllAttributes[attribute];
+                    prop.SetValue(this, Convert.ChangeType(value,prop.PropertyType));
+                }
                 return true;
             }
             return false;
@@ -450,7 +468,7 @@ namespace SRcsharp.Library
                 Immobile = false,
                 Shape = ObjectShape.Unknown
             };
-            obj._confidence.Value = 0.25f;
+            obj.Confidence.Spatial = 0.25f;
             return obj;
         }
 
@@ -462,7 +480,7 @@ namespace SRcsharp.Library
                 Existence = SpatialExistence.Virtual,
                 Immobile = false,
             };
-            obj._confidence.Spatial = 1.0f;
+            obj.Confidence.Spatial = 1.0f;
             return obj;
         }
 
@@ -478,7 +496,7 @@ namespace SRcsharp.Library
                 Immobile = true,
                 Shape = ObjectShape.Cubical
             };
-            obj._confidence.Value = 0.5f;
+            obj.Confidence.Spatial = 0.5f;
             return obj;
         }
 
@@ -500,7 +518,7 @@ namespace SRcsharp.Library
                 Immobile = true,
                 Shape = ObjectShape.Cubical
             };
-            obj._confidence.Value = 0.9f;
+            obj.Confidence.Spatial = 0.9f;
             return obj;
         }
 
@@ -516,7 +534,7 @@ namespace SRcsharp.Library
                 Type = "Person",
                 Shape = ObjectShape.Changing
             };
-            person._confidence.Value = 1.0f;
+            person.Confidence.Spatial = 1.0f;
             return person;
         }
 
@@ -530,29 +548,11 @@ namespace SRcsharp.Library
             _data[key] = value;
         }
 
-        //public float DataValue(string key)
-        //{
-        //    if (_data != null && _data.ContainsKey(key))
-        //    {
-        //        var value = _data[key];
-        //        if (value != null)
-        //        {
-        //            return (float)value;
-        //        }
-        //        //TODO: convert to NSNumber???
-        //        //if let val = value as? NSNumber {
-        //        //    return val.floatValue
-        //        //}
-        //    }
-        //    return 0.0f;
-        //}
 
         public Dictionary<string,object> AsDict()
         {
             var res = new Dictionary<string, object>();
             AddAsDict(res, AllAttributes);
-            //AddAsDict(res, NumericAttributes);
-            //AddAsDict(res, StringAttributes);
 
             if (_data != null)
             {
@@ -645,8 +645,8 @@ namespace SRcsharp.Library
             this.Supertype = input.ContainsKey("Supertype") ? input["Supertype"] as string : this.Supertype;
 
             number = input.ContainsKey("Confidence") ? float.Parse(input["Confidence"].ToString()) : null;
-            float confidence = number != null ? number.Value : this.Confidence.Value;
-            this.Confidence.Value = confidence;
+            float confidence = number != null ? number.Value : this.Confidence.Spatial;
+            this.Confidence.Spatial = confidence;
 
             string cause = input.ContainsKey("Cause") ? input["Cause"] as string : this.Cause.ToString();
             this.Cause = Enum.Parse<ObjectCause>(cause);

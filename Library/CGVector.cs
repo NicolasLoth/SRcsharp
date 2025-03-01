@@ -1,6 +1,6 @@
 ﻿
 using System.Numerics;
-
+using System;
 
 namespace SRcsharp.Library
 {
@@ -17,10 +17,10 @@ namespace SRcsharp.Library
         public float DX { get { return _rawValue.X; } set { _rawValue.X = value; } }
         public float DY { get { return _rawValue.Y; } set { _rawValue.Y = value; } }
 
-        public CGVector()
-        {
-            _rawValue = new Vector2();
-        }
+        //public CGVector()
+        //{
+        //    _rawValue = new Vector2();
+        //}
 
         public CGVector(float x, float y)
         {

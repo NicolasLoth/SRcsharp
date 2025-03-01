@@ -41,11 +41,11 @@ namespace SRcsharp.Library
 			set { _look = value; }
 		}
 
-        [SpatialObjectProperty]
-        public float Value { 
-			get { return (_pose + _dimension + _label) / 3; }
-			set { _pose = value; _dimension = value; _label = value; }
-		}
+  //      [SpatialObjectProperty]
+  //      public float Value { 
+		//	get { return (_pose + _dimension + _label) / 3; }
+		//	set { _pose = value; _dimension = value; _label = value; }
+		//}
 
         [SpatialObjectProperty]
         public float Spatial

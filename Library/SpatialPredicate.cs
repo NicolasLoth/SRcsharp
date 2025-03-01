@@ -25,14 +25,6 @@ namespace SRcsharp.Library
             set { _allPredicateEnums = value; }
         }
 
-        //private List<Enum> _allPredicateValues;
-
-        //public List<Enum> AllPredicateValues
-        //{
-        //    get { return _allPredicateValues; }
-        //    set { _allPredicateValues = value; }
-        //}
-
         static SpatialPredicate()
         {
             _allPredicateEnums = new List<Type>();
@@ -41,22 +33,6 @@ namespace SRcsharp.Library
             LoadAllPredicateNames();
         }
 
-        //public SpatialPredicate()
-        //{
-        //    Proximity = SpatialPredicateProximity.Undefined;
-        //    Directionality = SpatialPredicateDirectionality.Undefined;
-        //    Adjacency = SpatialPredicateAdjacency.Undefined;
-        //    Orientations = SpatialPredicateOrientations.Undefined;
-        //    Assembly = SpatialPredicateAssembly.Undefined;
-        //    Contacts = SpatialPredicateContacts.Undefined;
-        //    Comparability = SpatialPredicateComparability.Undefined;
-        //    Similarity = SpatialPredicateSimilarity.Undefined;
-        //    Visibility = SpatialPredicateVisibility.Undefined;
-        //    Geography = SpatialPredicateGeography.Undefined;
-
-        //    //_allPredicateValues = new List<Enum>();
-        //    //LoadAllPredicateValues();
-        //}
 
         private static void LoadAllPredicateNames()
         {
@@ -89,22 +65,10 @@ namespace SRcsharp.Library
                     Similarity,
                     Visibility,
                     Geography,
-                    Sectors
+                    Sectors,
+                    //MultistageRelation
                 };
             }
-            //_allPredicateValues = new List<Type>
-            //{
-            //    typeof(SpatialPredicateProximity),
-            //    typeof(SpatialPredicateDirectionality),
-            //    typeof(SpatialPredicateAdjacency),
-            //    typeof(SpatialPredicateOrientations),
-            //    typeof(SpatialPredicateAssembly),
-            //    typeof(SpatialPredicateContacts),
-            //    typeof(SpatialPredicateComparability),
-            //    typeof(SpatialPredicateSimilarity),
-            //    typeof(SpatialPredicateVisibility),
-            //    typeof(SpatialPredicateGeography)
-            //};
         }
 
         public static bool operator ==(SpatialPredicate pred1, SpatialPredicate pred2)
@@ -147,17 +111,6 @@ namespace SRcsharp.Library
         public static bool IsDefined(SpatialPredicate pred)
         {
             return pred.AllPredicateValues.Any(e => Convert.ToInt32(e) != 0);
-            //return
-            //    pred.Proximity != 0 ||
-            //    pred.Directionality != 0 ||
-            //    pred.Adjacency != 0 ||
-            //    pred.Orientations != 0 ||
-            //    pred.Assembly != 0 ||
-            //    pred.Contacts != 0 ||
-            //    pred.Comparability != 0 ||
-            //    pred.Similarity != 0 ||
-            //    pred.Visibility != 0 ||
-            //    pred.Geography != 0;
         }
 
         public bool IsDefined()
@@ -173,7 +126,6 @@ namespace SRcsharp.Library
 
         public List<string> GetDefinedPredicateValueNames()
         {
-            //return AllPredicateValues.SelectMany(e => e.GetFlagNames()).ToList();
             return AllPredicateValues.Where(e=> Convert.ToInt32(e) != 0).SelectMany(e => e.GetFlagNames()).ToList();
         }
 
@@ -187,7 +139,6 @@ namespace SRcsharp.Library
 
         public string RawValue { get { return GetDefinedPredicateValueName(true); } }
 
-        //public List<string> RawValues { get { return GetDefinedPredicateValueNames(); } }
 
         public override string ToString()
         {
@@ -220,6 +171,8 @@ namespace SRcsharp.Library
                     return Geography != 0;
                 case SpatialPredicateTypes.Sectors:
                     return Sectors != 0;
+                //case SpatialPredicateTypes.MultistageRelation:
+                //    return MultistageRelation != 0;
             }
             return false;
         }
@@ -260,6 +213,9 @@ namespace SRcsharp.Library
                     break;
                 case SpatialPredicateTypes.Sectors:
                     Sectors |= (SpatialPredicateSectors)value;
+                    break;
+                //case SpatialPredicateTypes.MultistageRelation:
+                //    MultistageRelation |= (SpatialPredicateMultistageRelation)value;
                     break;
             }
         }
@@ -302,6 +258,9 @@ namespace SRcsharp.Library
                 case SpatialPredicateTypes.Sectors:
                     pred.Sectors = (SpatialPredicateSectors)value;
                     break;
+                //case SpatialPredicateTypes.MultistageRelation:
+                //    pred.MultistageRelation = (SpatialPredicateMultistageRelation)value;
+                    break;
             }
 
             return pred;
@@ -334,7 +293,8 @@ namespace SRcsharp.Library
                 return typeof(SpatialPredicateGeography);
             if (Enum.GetNames(typeof(SpatialPredicateSectors)).Contains(value))
                 return typeof(SpatialPredicateSectors);
-
+            //if (Enum.GetNames(typeof(SpatialPredicateMultistageRelation)).Contains(value))
+            //    return typeof(SpatialPredicateMultistageRelation);
             return null;
 
         }
@@ -366,6 +326,8 @@ namespace SRcsharp.Library
                 return SpatialPredicateTypes.Geography;
             if (Enum.GetNames(typeof(SpatialPredicateSectors)).Contains(value))
                 return SpatialPredicateTypes.Sectors;
+            //if (Enum.GetNames(typeof(SpatialPredicateMultistageRelation)).Contains(value))
+            //    return SpatialPredicateTypes.MultistageRelation;
 
             return SpatialPredicateTypes.None;
         }
@@ -395,6 +357,8 @@ namespace SRcsharp.Library
                 pred.Geography = (SpatialPredicateGeography)value;
             if (typeof(T) == typeof(SpatialPredicateSectors))
                 pred.Sectors = (SpatialPredicateSectors)value;
+            //if (typeof(T) == typeof(SpatialPredicateMultistageRelation))
+            //    pred.MultistageRelation = (SpatialPredicateMultistageRelation)value;
 
             return pred;
         }
@@ -414,7 +378,8 @@ namespace SRcsharp.Library
             Similarity = 1 << 7,
             Visibility = 1<<8,
             Geography = 1<<9,
-            Sectors = 1<<10
+            Sectors = 1<<10,
+            MultistageRelation = 1<<11
         }
 
         public SpatialPredicateProximity Proximity { get; set; }
@@ -428,6 +393,7 @@ namespace SRcsharp.Library
         public SpatialPredicateVisibility Visibility { get; set; }
         public SpatialPredicateGeography Geography { get; set; }
         public SpatialPredicateSectors Sectors { get; set; }
+        //public SpatialPredicateMultistageRelation MultistageRelation { get; set; }
 
 
         [Flags]
@@ -583,6 +549,17 @@ namespace SRcsharp.Library
             Southwest = 1 << 6,
             Southeast = 1 << 7
         }
+
+        //[Flags]
+        //[SpatialPredicateEnumAttribute]
+        //public enum SpatialPredicateMultistageRelation
+        //{
+        //    Undefined = 0,
+        //    SecondLeft = 1<<0,
+        //    SecondRight = 1<<1,
+        //    MostLeft = 1<<2,
+        //    MostRight = 1<<3
+        //}
 
         [Flags]
         [SpatialPredicateEnumAttribute]

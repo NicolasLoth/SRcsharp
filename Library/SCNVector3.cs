@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using System.Numerics;
-
+using System;
 
 namespace SRcsharp.Library
 {
@@ -19,10 +19,10 @@ namespace SRcsharp.Library
         public float Z { get { return _rawValue.Z; } set { _rawValue.Z = value; } }
 
 
-        public SCNVector3()
-        {
-            _rawValue = new Vector3();
-        }
+        //public SCNVector3()
+        //{
+        //    _rawValue = new Vector3();
+        //}
 
         public SCNVector3(float x, float y, float z)
         {
@@ -39,7 +39,7 @@ namespace SRcsharp.Library
         public static SCNVector3 Zero { get { var vec = new SCNVector3(0,0,0); return vec; } }
         public static SCNVector3 One { get { var vec = new SCNVector3(1,1,1); return vec; } }
 
-        public static SCNVector3[] Nearest(SCNVector3[] pts)
+        public SCNVector3[] Nearest(SCNVector3[] pts)
         {
             return pts.OrderBy(scnVec => scnVec.Length).ToArray();
         }
