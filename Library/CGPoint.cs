@@ -5,7 +5,7 @@ namespace SRcsharp.Library
 {
 
     //Wrapper for renaming and extending Float-Vector2
-    public class CGPoint
+    public struct CGPoint
     {
 
 		private Vector2 _rawValue;

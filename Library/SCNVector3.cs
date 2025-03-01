@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace SRcsharp.Library
 {
-    public class SCNVector3
+    public struct SCNVector3
     {
 
         private Vector3 _rawValue;
@@ -67,6 +67,28 @@ namespace SRcsharp.Library
         {
             return new SCNVector3(left.RawValue / scalar);
         }
-        
+
+
+        public SCNVector3 ConvertIntoLocal(SCNVector3 position, float angle)
+        {
+            var vx = X - position.X;
+            var vz = Z - position.Z;
+            var rotsin = Math.Sin(angle);
+            var rotcos = Math.Cos(angle);
+            var x = vx * rotcos - vz * rotsin;
+            var z = vx * rotsin + vz * rotcos;
+
+            return new SCNVector3((float)x, Y - position.Y, (float)z);
+        }
+
+        public SCNVector3 Rotate(float angle)
+        {
+            var rotsin = Math.Sin(angle);
+            var rotcos = Math.Cos(angle);
+            var x = X * rotcos - Z * rotsin;
+            var z = X * rotsin + Z * rotcos;
+
+            return new SCNVector3((float)x, Y, (float)z);
+        }
     }
 }

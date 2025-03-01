@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Reflection;
 using static SRcsharp.Library.SpatialPredicate;
 using static SRcsharp.Library.SREnums;
+using System.Reflection.Metadata;
 
 namespace SRcsharp.Library
 {
@@ -355,7 +356,7 @@ namespace SRcsharp.Library
             
         }
 
-        public SpatialObject(string id, SCNVector3 position = null, float width = 1.0f, float height = 1.0f, float depth = 1.0f, float angle = 0.0f, string label = "", float confidence = 0.0f)
+        public SpatialObject(string id, SCNVector3 position, float width = 1.0f, float height = 1.0f, float depth = 1.0f, float angle = 0.0f, string label = "", float confidence = 0.0f)
         {
             _id = id;
             _position = position;
@@ -371,7 +372,7 @@ namespace SRcsharp.Library
         }
 
         public SpatialObject(string id) :
-            this(id, null, 1.0f, 1.0f, 1.0f, 0.0f, "", 0.0f)
+            this(id, SCNVector3.Zero, 1.0f, 1.0f, 1.0f, 0.0f, "", 0.0f)
         {
 
         }
@@ -573,8 +574,8 @@ namespace SRcsharp.Library
             float? number = 0.0f;
             SCNVector3 pos = new SCNVector3();
 
-            if (_position == null)
-                _position = new SCNVector3();
+            //if (_position == null)
+            //    _position = new SCNVector3();
 
             var list = input.ContainsKey("Position") ? input["Position"] as List<float> : null;
             if (list != null && list.Count == 3)
@@ -755,7 +756,10 @@ namespace SRcsharp.Library
             var points = new List<CGPoint>() { p0, p1, p2, p3 };
             if (!local)
             {
-                points.ForEach(p => p = p.Rotate(-_angle));
+                p0 = p0.Rotate(-_angle);
+                p1 = p1.Rotate(-_angle);
+                p2 = p2.Rotate(-_angle);
+                p3 = p3.Rotate(-_angle);
                 vector = _position;
             }
             var res = points.Select(p => new SCNVector3(p.X + vector.X, vector.Y, p.Y + vector.Z));
@@ -773,7 +777,10 @@ namespace SRcsharp.Library
             var points = new List<CGPoint>() { p0, p1, p2, p3 };
             if (!local)
             {
-                points.ForEach(p => p=  p.Rotate(-_angle));
+                p0 = p0.Rotate(-_angle);
+                p1 = p1.Rotate(-_angle);
+                p2 = p2.Rotate(-_angle);
+                p3 = p3.Rotate(-_angle);
                 vector = _position;
             }
             var res = points.Select(p => new SCNVector3(p.X + vector.X, vector.Y + _height, p.Y + vector.Z));
@@ -789,7 +796,8 @@ namespace SRcsharp.Library
             var points = new List<CGPoint>() { p0, p1 };
             if (!local)
             {
-                points.ForEach(p => p = p.Rotate(-_angle));
+                p0 = p0.Rotate(-_angle);
+                p1 = p1.Rotate(-_angle);
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[4];
@@ -809,7 +817,8 @@ namespace SRcsharp.Library
             var points = new List<CGPoint>() { p0, p1 };
             if (!local)
             {
-                points.ForEach(p => p = p.Rotate(-_angle));
+                p0 = p0.Rotate(-_angle);
+                p1 = p1.Rotate(-_angle);
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[4];
@@ -829,7 +838,8 @@ namespace SRcsharp.Library
             var points = new List<CGPoint>() { p0, p1 };
             if (!local)
             {
-                points.ForEach(p => p = p.Rotate(-_angle));
+                p0 = p0.Rotate(-_angle);
+                p1 = p1.Rotate(-_angle);
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[4];
@@ -849,7 +859,8 @@ namespace SRcsharp.Library
             var points = new List<CGPoint>() { p0, p1 };
             if (!local)
             {
-                points.ForEach(p => p = p.Rotate(-_angle));
+                p0 = p0.Rotate(-_angle);
+                p1 = p1.Rotate(-_angle);
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[4];
@@ -868,10 +879,13 @@ namespace SRcsharp.Library
             var p3 = new CGPoint(_width / 2.0f, -_depth / 2.0f);
 
             var vector = new SCNVector3();
-            var points = new List<CGPoint>() { p0, p1, p2, p3 };
+            var points = new CGPoint[] { p0, p1, p2, p3 };
             if (!local)
             {
-                points.ForEach(p => p = p.Rotate(-_angle));
+                p0 = p0.Rotate(-_angle);
+                p1 = p1.Rotate(-_angle);
+                p2 = p2.Rotate(-_angle);
+                p3 = p3.Rotate(-_angle);
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[8];
@@ -886,6 +900,8 @@ namespace SRcsharp.Library
             return res;
         }
 
+
+
         public float CalcDistance(SCNVector3 to)
         {
             return (to - Center).Length;
@@ -899,37 +915,31 @@ namespace SRcsharp.Library
 
         public SCNVector3 ConvertIntoLocal(SCNVector3 pt)
         {
-            var vx = pt.X - _position.X;
-            var vz = pt.Z - _position.Z;
-            var rotsin = Math.Sin(_angle);
-            var rotcos = Math.Cos(_angle);
-            var x = vx * rotcos - vz * rotsin;
-            var z = vx * rotsin + vz * rotcos;
-
-            return new SCNVector3((float)x, pt.Y - _position.Y, (float)z);
+            return pt.ConvertIntoLocal(_position, _angle);
         }
 
         public SCNVector3[] ConvertIntoLocal(SCNVector3[] pts)
         {
-            var ptsList = pts.ToList();
-            ptsList.Select(pt => ConvertIntoLocal(pt));
-            return ptsList.ToArray();
-        }
-
-        public SCNVector3 Rotate(SCNVector3 pt, float angle)
-        {
-            var rotsin = Math.Sin(angle);
-            var rotcos = Math.Cos(angle);
-            var x = pt.X * rotcos - pt.Z * rotsin;
-            var z = pt.X * rotsin + pt.Z * rotcos;
-            return new SCNVector3((float)x, pt.Y, (float)z);
+            var res = new SCNVector3[pts.Length];
+            for (int i = 0; i < pts.Length; i++)
+                res[i] = pts[i].ConvertIntoLocal(_position, _angle);
+            return res;
         }
 
         public SCNVector3[] Rotate(SCNVector3[] pts, float angle)
         {
-            var ptsList = pts.ToList();
-            ptsList.ForEach(pt => Rotate(pt, angle));
-            return ptsList.ToArray();
+            var res = new SCNVector3[pts.Length];
+            for (int i = 0; i < pts.Length; i++)
+                res[i] = pts[i].Rotate(angle);
+            return res;
+        }
+
+        public CGPoint[] Rotate(CGPoint[] pts, float angle)
+        {
+            var res = new CGPoint[pts.Length];
+            for (int i = 0; i < pts.Length; i++)
+                res[i] = pts[i].Rotate(angle);
+            return res;
         }
 
         public BBoxSectors IsSectorOf(SCNVector3 point, bool nearBy = false, float epsilon = -100.0f)
@@ -1096,7 +1106,8 @@ namespace SRcsharp.Library
             var isBeside = false;
 
             /// calculations in local object space
-            var localPts = ConvertIntoLocal(subject.CalcPoints());
+            var subjectPts = subject.CalcPoints();
+            var localPts = ConvertIntoLocal(subjectPts);
             var zones = new List<BBoxSectors>();
             foreach(var pt in localPts)
             {
@@ -1107,8 +1118,8 @@ namespace SRcsharp.Library
 
             (gap, minDistance) = CalcAndAddProximities(result, subject, gap, minDistance, centerDistance, theta);
             (gap, minDistance) = CalcAndAddDirectionalities(result, subject, gap, minDistance, localCenter, centerZone, theta);
-            (gap, minDistance, canNotOverlap, aligned, isBeside) = CalcAndAddAdjacancies(result, subject, gap, minDistance, canNotOverlap, aligned, isBeside, localPts, centerZone, theta);
-            (gap, minDistance) = CalcAndAddAssembly(result, subject, gap, minDistance, aligned, isBeside, isDisjoint, canNotOverlap, isConnected, localPts, zones, centerDistance, theta);
+            (minDistance, canNotOverlap, aligned, isBeside) = CalcAndAddAdjacancies(result, subject, minDistance, canNotOverlap, localPts, localCenter, theta);
+            gap = CalcAndAddAssembly(result, subject, gap, minDistance, aligned, isBeside, isDisjoint, canNotOverlap, isConnected, localPts, zones, centerDistance, theta);
             (gap, minDistance) = CalcAndAddOrientations(result, subject, gap, minDistance, localCenter, centerDistance, theta);
             CalcAndAddVisibilities(result, subject, centerDistance);
 
@@ -1127,11 +1138,11 @@ namespace SRcsharp.Library
                     float hourAngle = 30.0f; // 360.0/12.0
                     if (angle < 0.0f)
                     {
-                        angle -= hourAngle / 2.0f;
+                        angle -= (hourAngle / 2.0f);
                     }
                     else
                     {
-                        angle += hourAngle / 2.0f;
+                        angle += (hourAngle / 2.0f);
                     }
 
                     int cnt = (int)Math.Round(angle / hourAngle);
@@ -1252,7 +1263,7 @@ namespace SRcsharp.Library
             return (gap, minDistance);
         }
 
-        public (float, float) CalcAndAddAssembly(List<SpatialRelation> result, SpatialObject subject, float gap, float minDistance, bool aligned, bool isBeside, bool isDisjoint, bool canNotOverlap, bool isConnected, SCNVector3[] localPts, List<BBoxSectors> zones, float centerDistance, float theta)
+        public float CalcAndAddAssembly(List<SpatialRelation> result, SpatialObject subject, float gap, float minDistance, bool aligned, bool isBeside, bool isDisjoint, bool canNotOverlap, bool isConnected, SCNVector3[] localPts, List<BBoxSectors> zones, float centerDistance, float theta)
         {
             // If the object is beside another object, add a "Beside" relation
             if (isBeside)
@@ -1427,11 +1438,14 @@ namespace SRcsharp.Library
             }
 
 
-            return (gap, minDistance);
+            return gap;
         }
 
-        public (float, float, bool, bool, bool) CalcAndAddAdjacancies(List<SpatialRelation> result, SpatialObject subject, float gap, float minDistance, bool canNotOverlap, bool aligned, bool isBeside, SCNVector3[] localPts, BBoxSectors centerZone, float theta)
+        public (float, bool, bool, bool) CalcAndAddAdjacancies(List<SpatialRelation> result, SpatialObject subject, float minDistance, bool canNotOverlap, SCNVector3[] localPts, SCNVector3 localCenter, float theta)
         {
+            var aligned = false;
+            var isBeside = false;
+            var centerZone = IsSectorOf(localCenter, true, -Adjustment.MaxGap);
 
             // Check if the center zone is not 'I' (neutral/inside zone)
             if (centerZone != BBoxSectors.Inside)
@@ -1443,18 +1457,22 @@ namespace SRcsharp.Library
                     aligned = true;
                 }
 
+                var min = float.MaxValue;
+
                 // Compare the zone and compute the minimal distances
                 if (centerZone == BBoxSectors.Left)
                 {
                     foreach (var pt in localPts)
                     {
-                        minDistance = Math.Min(minDistance, pt.X - _width / 2.0f);
+                        min = Math.Min(min, pt.X - _width / 2.0f);
                     }
-                    if (minDistance >= 0.0f)
+                    if (min >= 0.0f)
                     {
+                        canNotOverlap = true;
                         isBeside = true;
-                        gap = minDistance;
-                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.LeftSide), this, gap, theta);
+                        //gap = minDistance;
+                        minDistance = min;
+                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.LeftSide), this, min, theta);
                         result.Add(relation);
                     }
                 }
@@ -1462,13 +1480,14 @@ namespace SRcsharp.Library
                 {
                     foreach (var pt in localPts)
                     {
-                        minDistance = Math.Min(minDistance, -pt.X - Width / 2.0f);
+                        min = Math.Min(min, -pt.X - Width / 2.0f);
                     }
-                    if (minDistance >= 0.0f)
+                    if (min >= 0.0f)
                     {
+                        canNotOverlap = true;
                         isBeside = true;
-                        gap = minDistance;
-                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.RightSide), this, gap, theta);
+                        minDistance = min;
+                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.RightSide), this, min, theta);
                         result.Add(relation);
                     }
                 }
@@ -1476,19 +1495,21 @@ namespace SRcsharp.Library
                 {
                     foreach (var pt in localPts)
                     {
-                        minDistance = Math.Min(minDistance, pt.Y - Height);
+                        min = Math.Min(min, pt.Y - Height);
                     }
-                    if (minDistance >= 0.0f)
+                    if (min >= 0.0f)
                     {
-                        gap = minDistance;
-                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.OnTop), this, gap, theta);
+                        canNotOverlap = true;
+                        minDistance = min;
+                        //gap = minDistance;
+                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.OnTop), this, min, theta);
                         result.Add(relation);
                         if(_context == null || _context.DeduceCategories.HasFlag(SpatialPredicatedCategories.Connectivity))
                         {
-                            relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateContacts>((int)SpatialPredicateContacts.On), this, gap, theta);
+                            relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateContacts>((int)SpatialPredicateContacts.On), this, min, theta);
                             result.Add(relation);
                         }
-                        relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.UpperSide), this, gap, theta);
+                        relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.UpperSide), this, min, theta);
                         result.Add(relation);
                     }
                 }
@@ -1496,14 +1517,16 @@ namespace SRcsharp.Library
                 {
                     foreach (var pt in localPts)
                     {
-                        minDistance = Math.Min(minDistance, -pt.Y);
+                        min = Math.Min(min, -pt.Y);
                     }
-                    if (minDistance >= 0.0f)
+                    if (min >= 0.0f)
                     {
-                        gap = minDistance;
-                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.Beneath), this, gap, theta);
+                        canNotOverlap = true;
+                        //gap = minDistance;
+                        minDistance = min;
+                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.Beneath), this, min, theta);
                         result.Add(relation);
-                        relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.LowerSide), this, gap, theta);
+                        relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.LowerSide), this, min, theta);
                         result.Add(relation);
                     }
                 }
@@ -1511,13 +1534,15 @@ namespace SRcsharp.Library
                 {
                     foreach (var pt in localPts)
                     {
-                        minDistance = Math.Min(minDistance, pt.Z - _depth / 2.0f);
+                        min = Math.Min(min, pt.Z - _depth / 2.0f);
                     }
-                    if (minDistance >= 0.0f)
+                    if (min >= 0.0f)
                     {
+                        canNotOverlap = true;
                         isBeside = true;
-                        gap = minDistance;
-                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.FrontSide), this, gap, theta);
+                        //gap = minDistance;
+                        minDistance = min;
+                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.FrontSide), this, min, theta);
                         result.Add(relation);
                     }
                 }
@@ -1525,26 +1550,28 @@ namespace SRcsharp.Library
                 {
                     foreach (var pt in localPts)
                     {
-                        minDistance = Math.Min(minDistance, -pt.Z - _depth / 2.0f);
+                        min = Math.Min(min, -pt.Z - _depth / 2.0f);
                     }
-                    if (minDistance >= 0.0f)
+                    if (min >= 0.0f)
                     {
+                        canNotOverlap = true;
                         isBeside = true;
-                        gap = minDistance;
-                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.BackSide), this, gap, theta);
+                        //gap = minDistance;
+                        minDistance = min;
+                        var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAdjacency>((int)SpatialPredicateAdjacency.BackSide), this, min, theta);
                         result.Add(relation);
                     }
                 }
 
                 // If the object is beside another object, add a "Beside" relation
-                if (isBeside)
-                {
-                    var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Beside), this, minDistance, theta);
-                    result.Add(relation);
-                }
+                //if (isBeside)
+                //{
+                //    var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateAssembly>((int)SpatialPredicateAssembly.Beside), this, minDistance, theta);
+                //    result.Add(relation);
+                //}
             }
 
-            return (gap, minDistance, canNotOverlap, aligned, isBeside);
+            return (minDistance, canNotOverlap, aligned, isBeside);
         }
 
         public (float, float) CalcAndAddDirectionalities(List<SpatialRelation> result, SpatialObject subject, float gap, float minDistance, SCNVector3 localCenter, BBoxSectors centerZone, float theta)

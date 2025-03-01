@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace SRcsharp.Library
 {
-    public class CGVector
+    public struct CGVector
     {
 
         private Vector2 _rawValue;

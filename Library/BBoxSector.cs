@@ -13,12 +13,12 @@ namespace SRcsharp.Library
     {
         None = 0,
         Inside = 1 << 0,
-        Ahead = 1 << 2,
-        Behind = 1 << 3,
-        Left = 1 << 4,
-        Right = 1 << 5,
-        Above = 1 << 6,
-        Below = 1 << 7
+        Ahead = 1 << 1,
+        Behind = 1 << 2,
+        Left = 1 << 3,
+        Right = 1 << 4,
+        Above = 1 << 5,
+        Below = 1 << 6
     };
 
     // Directional 3x3x3 BBox Sector Matrix (27 object-related boundary sectors)

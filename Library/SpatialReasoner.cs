@@ -500,7 +500,7 @@ namespace SRcsharp.Library
         {
             var rels = new List<SpatialRelation>();
             if (objIdx >= 0)
-                rels = RelationsOf(objIdx).Where(rel => rel.Predicate.IsDefined() && rel.Predicate.RawValue == predicate).ToList();
+                rels = RelationsOf(objIdx).Where(rel => rel.Predicate.IsDefined() && rel.Predicate.RawValue.ToLower() == predicate.ToLower()).ToList();
             return rels;
         }
 
@@ -508,7 +508,7 @@ namespace SRcsharp.Library
         {
             var relations = RelationsOf(objIdx);
 
-            return relations.Any(rel => rel.Subject == subject && rel.Predicate.IsDefined() && rel.Predicate.RawValue == predicate);
+            return relations.Any(rel => rel.Subject == subject && rel.Predicate.IsDefined() && rel.Predicate.RawValue.ToLower() == predicate.ToLower());
         }
 
         public bool Adjust(string settings)
