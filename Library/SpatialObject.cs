@@ -313,6 +313,7 @@ namespace SRcsharp.Library
         #endregion
 
         public static Dictionary<string, PropertyInfo> AllAttributes;
+        public static Dictionary<string, List<PropertyInfo>> NestedAttributes;
         public static Dictionary<string, PropertyInfo> BooleanAttributes;
         public static Dictionary<string, PropertyInfo> NumericAttributes;
         public static Dictionary<string, PropertyInfo> StringAttributes;
@@ -333,14 +334,39 @@ namespace SRcsharp.Library
                 var adds = pi.PropertyType.GetProperties().Where(
                 prop => Attribute.IsDefined(prop, typeof(SpatialObjectPropertyAttribute)) && types.Contains(prop.PropertyType)).
                 ToDictionary(prop => pi.Name+"."+prop.Name);
-                adds.ToList().ForEach(x => res.Add(x.Key, x.Value));
+                adds.ToList().ForEach(x =>
+                {
+                    res.Add(x.Key, x.Value);
+                    NestedAttributes.Add(x.Key, new List<PropertyInfo>() { pi, x.Value });
+                });
             }
 
             return res;
         }
 
+        public object GetAttributeValue(string property)
+        {
+            if (!AllAttributes.ContainsKey(property)) { return null; }
+
+            object obj = null;
+            if (SpatialObject.NestedAttributes.ContainsKey(property))
+            {
+                obj = this;
+                foreach (var pi in SpatialObject.NestedAttributes[property])
+                {
+                    obj = pi.GetValue(obj);
+                }
+            }
+            else
+            {
+                obj = AllAttributes[property].GetValue(this);
+            }
+            return obj;
+        }
+
         static SpatialObject()
         {
+            NestedAttributes = new Dictionary<string, List<PropertyInfo>>(StringComparer.InvariantCultureIgnoreCase);
             BooleanAttributes = LoadAttributes(new Type[] { typeof(bool) });
             NumericAttributes = LoadAttributes(new Type[] { typeof(float), typeof(double), typeof(decimal), typeof(byte), typeof(short), typeof(int), typeof(long) });
             StringAttributes = LoadAttributes(new Type[] { typeof(string), typeof(Enum) });

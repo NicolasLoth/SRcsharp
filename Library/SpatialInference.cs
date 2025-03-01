@@ -127,7 +127,7 @@ namespace SRcsharp.Library
 
             foreach (var i in indices)
             {
-                var so = Fact.BaseObjects[i];
+                var so = Fact.Objects[i];
                 var cond = ReplaceVariables(condition, so);
                 cond = cond.Replace("==", "=");
                 result = Evaluator.CompEval(cond);
@@ -142,29 +142,58 @@ namespace SRcsharp.Library
             return adds;
         }
 
-        private string ReplaceVariables(string condition, List<Dictionary<string, object>> so)
+        private string ReplaceVariables(string condition, List<SpatialObject> so)
         {
-            foreach(var dict in so)
+            foreach (var dict in so)
             {
                 condition = ReplaceVariables(condition, dict);
             }
             return condition;
         }
 
-        private string ReplaceVariables(string condition, Dictionary<string, object> so)
+        private string ReplaceVariables(string condition, SpatialObject so)
         {
-            foreach(var kvp in so)
+            foreach (var kvp in SpatialObject.AllAttributes)
             {
                 if (condition.Contains(kvp.Key.ToLower()))
-                {
-                    if(kvp.Value.GetType() == typeof(string))
-                        condition = condition.Replace(kvp.Key, "'"+kvp.Value.ToString()+"'", StringComparison.OrdinalIgnoreCase);
+                { 
+
+                    var obj = so.GetAttributeValue(kvp.Key);
+
+                    if (SpatialObject.StringAttributes.ContainsKey(kvp.Key))
+                        condition = condition.Replace(kvp.Key, "'" + obj.ToString() + "'", StringComparison.OrdinalIgnoreCase);
                     else
-                        condition = condition.Replace(kvp.Key, kvp.Value.ToString(), StringComparison.OrdinalIgnoreCase);
+                        condition = condition.Replace(kvp.Key, obj.ToString(), StringComparison.OrdinalIgnoreCase);
                 }
             }
             return condition;
         }
+
+        ////Old method via dict copy
+        //private string ReplaceVariables(string condition, List<Dictionary<string, object>> so)
+        //{
+        //    foreach(var dict in so)
+        //    {
+        //        condition = ReplaceVariables(condition, dict);
+        //    }
+        //    return condition;
+        //}
+
+        ////Old method via dict copy
+        //private string ReplaceVariables(string condition, Dictionary<string, object> so)
+        //{
+        //    foreach(var kvp in so)
+        //    {
+        //        if (condition.Contains(kvp.Key.ToLower()))
+        //        {
+        //            if(kvp.Value.GetType() == typeof(string))
+        //                condition = condition.Replace(kvp.Key, "'"+kvp.Value.ToString()+"'", StringComparison.OrdinalIgnoreCase);
+        //            else
+        //                condition = condition.Replace(kvp.Key, kvp.Value.ToString(), StringComparison.OrdinalIgnoreCase);
+        //        }
+        //    }
+        //    return condition;
+        //}
 
         public void Pick(string relations)
         {
@@ -210,7 +239,7 @@ namespace SRcsharp.Library
             string conditions = list[1];
             string relations = list[0];
             var predicates = relations.Keywords();
-            var baseObjects = Fact.BaseObjects;
+            //var baseObjects = Fact.BaseObjects;
 
             foreach (var i in Input)
             {
@@ -256,7 +285,7 @@ namespace SRcsharp.Library
             //throw new NotImplementedException();
 
             var list = assignments.Split(';').Select(a => a.Trim()).ToArray();
-            var baseObjects = Fact.BaseObjects;
+            //var baseObjects = Fact.BaseObjects;
 
             foreach (var i in _input)
             {
@@ -272,7 +301,7 @@ namespace SRcsharp.Library
                         //var expression = new NSExpression(expr);
                         //var value = expression.ExpressionValueWith(baseObjects[i], null);
                         //var value = expr; //TODO: evaluate boolean and mathematical statements
-                        var value = ReplaceVariables(expr, Fact.BaseObjects[i]);
+                        var value = ReplaceVariables(expr, Fact.Objects[i]);
                         var res = new DataTable().Compute(value, ""); 
                         Fact.Objects[i].SetPropertyByName(key, res);
 
@@ -303,7 +332,7 @@ namespace SRcsharp.Library
                     var key = kv[0].Trim();
                     var expr = kv[1].Trim();
 
-                    var value = ReplaceVariables(expr, Fact.BaseObjects);
+                    var value = ReplaceVariables(expr, Fact.Objects);
                     var res = new DataTable().Compute(value, "");
  
 

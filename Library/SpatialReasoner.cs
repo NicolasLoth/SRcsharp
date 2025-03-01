@@ -151,7 +151,7 @@ namespace SRcsharp.Library
 
         public List<SpatialObject> Result { get { return GetResult(); } }
 
-        public List<Dictionary<string, object>> BaseObjects { get { return (List<Dictionary<string, object>>)_base[SpatialReasonerBaseContentType.Objects]; } }
+        //public List<Dictionary<string, object>> BaseObjects { get { return (List<Dictionary<string, object>>)_base[SpatialReasonerBaseContentType.Objects]; } }
 
         public List<Dictionary<string, object>> BaseData { get { return (List<Dictionary<string, object>>)_base[SpatialReasonerBaseContentType.Data]; } }
 
@@ -208,18 +208,18 @@ namespace SRcsharp.Library
                     indices.Add(i);
                 }
 
-                List<Dictionary<string, object>> objList = new List<Dictionary<string, object>>();
+                //List<Dictionary<string, object>> objList = new List<Dictionary<string, object>>();
                 foreach (var idx in indices)
                 {
                     _objects[idx].Context = this;
-                    var dict = _objects[idx].AsDict();
-                    objList.Add(dict);
+                    //var dict = _objects[idx].AsDict();
+                    //objList.Add(dict);
                     if (_objects[idx].Observing)
                     {
                         _observer = _objects[idx];
                     }
                 }
-                _base[SpatialReasonerBaseContentType.Objects] = objList;
+                //_base[SpatialReasonerBaseContentType.Objects] = objList;
             }
 
             var snapTime = DateTime.Now;
@@ -366,7 +366,7 @@ namespace SRcsharp.Library
                     }
                 }
             }
-            SyncToObjects();
+            //SyncToObjects();
 
             if (_chain.Any())
             {
