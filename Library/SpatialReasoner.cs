@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using System.Collections;
@@ -7,18 +6,21 @@ using System.Collections.Generic;
 using System.Data;
 using static SRcsharp.Library.SREnums;
 using System.Numerics;
+using System;
 
 namespace SRcsharp.Library
 {
     public class SpatialReasoner : IEnumerable<SpatialObject>
     {
 
+
         public enum SpatialReasonerBaseContentType { Undefined, Objects, Snaptime, Data, Chain }
 
-        [Flags]
-        public enum CoordinateSystemTypes { Undefined = 0, RightHanded = 1, LeftHanded = 2, YUp = 4, YDown=8, RightHandedYUp=5, LeftHandedYUp=6, RightHandedYDown=9, LeftHandedYDown=10 }
 
-        private CoordinateSystemTypes _coordinateSystem = CoordinateSystemTypes.RightHandedYUp;
+        public static CoordinateSystemTypes CoordinateSystemDefinition = CoordinateSystemTypes.RightHandedYUp;
+
+
+        private CoordinateSystemTypes _coordinateSystem;
 
         public CoordinateSystemTypes CoordinateSystem
         {
@@ -168,40 +170,44 @@ namespace SRcsharp.Library
         public List<Dictionary<string, object>> BaseData { get { return (List<Dictionary<string, object>>)_base[SpatialReasonerBaseContentType.Data]; } }
 
 
+        public static SpatialReasoner Create()
+        {
+            return new SpatialReasoner(CoordinateSystemDefinition);
+        }
+
         public static SpatialReasoner Create(CoordinateSystemTypes coordinateSystem)
         {
             return new SpatialReasoner(coordinateSystem);
         }
 
-        public static SpatialReasoner Create()
+        public SpatialReasoner():this(CoordinateSystemTypes.RightHandedYUp)
         {
-            return new SpatialReasoner();
+            
         }
 
-        public SpatialReasoner()
+        public SpatialReasoner(CoordinateSystemTypes coordinateSystem)
         {
+            _coordinateSystem = coordinateSystem;
+            Init();
             _adjustment = new SpatialAdjustment();
             _chain = new List<SpatialInference>();
             InitBase();
         }
 
-        public SpatialReasoner(CoordinateSystemTypes coordinateSystem):this()
+        public static void Init(CoordinateSystemTypes coordinateSystem)
         {
-            _coordinateSystem = coordinateSystem;
-            Init();
+            CoordinateSystemDefinition = coordinateSystem;
+            SpatialObject.CoordinateSystemDefinition = coordinateSystem;
         }
 
         private void Init()
         {
-            if (_coordinateSystem.HasFlag(CoordinateSystemTypes.YDown))
-            {
-                throw new NotImplementedException("Y Down coordinate systems are not implemented yet");
-            }
+            SpatialObject.CoordinateSystemDefinition = _coordinateSystem;
             if(_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
             {
                 _north = new CGVector(0.0f, -1.0f);
             }
-            else if(_coordinateSystem.HasFlag(CoordinateSystemTypes.LeftHanded))
+            else
             {
                 _north = new CGVector(0.0f, 1.0f);
             }
@@ -275,10 +281,11 @@ namespace SRcsharp.Library
             _snapTime = DateTime.Now;
         }
 
-        public void Load(string json)
-        {
-            throw new NotImplementedException();
-        }
+        //public void Load(string json)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
 
         public SpatialObject? GetObjectById(string id)
         {

@@ -12,6 +12,17 @@ namespace SRcsharp.Library
     public class SpatialObject
     {
 
+        public static CoordinateSystemTypes CoordinateSystemDefinition = CoordinateSystemTypes.RightHandedYUp;
+
+        private CoordinateSystemTypes _coordinateSystem;
+        [SpatialObjectProperty]
+        public CoordinateSystemTypes CoordinateSystem
+        {
+            get { return _coordinateSystem; }
+            set { _coordinateSystem = value; }
+        }
+
+
         #region Non-Spatial Characteristics
         private string _id = string.Empty;
         [SpatialObjectProperty]
@@ -355,6 +366,11 @@ namespace SRcsharp.Library
             StringAttributes.ToList().ForEach(kvp => AllAttributes.Add(kvp.Key, kvp.Value));
         }
 
+        public static void Init(CoordinateSystemTypes coordinateSystem)
+        {
+            CoordinateSystemDefinition = coordinateSystem;
+        }
+
         public SpatialObject(string id, float x = 0.0f, float y = 0.0f, float z = 0.0f, float width = 1.0f, float height = 1.0f, float depth = 1.0f, float angle = 0.0f, string label = "", float confidence = 0.0f)
             : this(id, new SCNVector3(x, y, z), width, height, depth, angle, label, confidence)
         {
@@ -363,6 +379,7 @@ namespace SRcsharp.Library
 
         public SpatialObject(string id, SCNVector3 position, float width = 1.0f, float height = 1.0f, float depth = 1.0f, float angle = 0.0f, string label = "", float confidence = 0.0f)
         {
+            _coordinateSystem = CoordinateSystemDefinition;
             _id = id;
             _position = position;
             _width = width;
@@ -378,6 +395,8 @@ namespace SRcsharp.Library
 
         public SpatialObject(string id) :
             this(id, SCNVector3.Zero, 1.0f, 1.0f, 1.0f, 0.0f, "", 0.0f) { }
+
+
 
         public static SpatialObject Clone(SpatialObject so, string id)
         {
@@ -580,10 +599,10 @@ namespace SRcsharp.Library
             }
         }
 
-        public Dictionary<string, object> ToAny()
-        {
-            throw new NotImplementedException();
-        }
+        //public Dictionary<string, object> ToAny()
+        //{
+        //    throw new NotImplementedException();
+        //}
 
         public void FromAny(Dictionary<string, object> input)
         {
@@ -771,131 +790,131 @@ namespace SRcsharp.Library
             return 0;
         }
 
-        public SCNVector3[] CalcLowerPoints(bool local = false)
-        {
-            var p0 = new CGPoint(_width / 2.0f, _depth / 2.0f);
-            var p1 = new CGPoint(-_width / 2.0f, _depth / 2.0f);
-            var p2 = new CGPoint(-_width / 2.0f, -_depth / 2.0f);
-            var p3 = new CGPoint(_width / 2.0f, -_depth / 2.0f);
+        //public SCNVector3[] CalcLowerPoints(bool local = false)
+        //{
+        //    var p0 = new CGPoint(_width / 2.0f, _depth / 2.0f);
+        //    var p1 = new CGPoint(-_width / 2.0f, _depth / 2.0f);
+        //    var p2 = new CGPoint(-_width / 2.0f, -_depth / 2.0f);
+        //    var p3 = new CGPoint(_width / 2.0f, -_depth / 2.0f);
 
-            var vector = new SCNVector3();
-            var points = new List<CGPoint>() { p0, p1, p2, p3 };
-            if (!local)
-            {
-                p0 = p0.Rotate(-_angle);
-                p1 = p1.Rotate(-_angle);
-                p2 = p2.Rotate(-_angle);
-                p3 = p3.Rotate(-_angle);
-                vector = _position;
-            }
-            var res = points.Select(p => new SCNVector3(p.X + vector.X, vector.Y, p.Z + vector.Z));
-            return res.ToArray();
-        }
+        //    var vector = new SCNVector3();
+        //    var points = new List<CGPoint>() { p0, p1, p2, p3 };
+        //    if (!local)
+        //    {
+        //        p0 = p0.Rotate(-_angle);
+        //        p1 = p1.Rotate(-_angle);
+        //        p2 = p2.Rotate(-_angle);
+        //        p3 = p3.Rotate(-_angle);
+        //        vector = _position;
+        //    }
+        //    var res = points.Select(p => new SCNVector3(p.X + vector.X, vector.Y, p.Z + vector.Z));
+        //    return res.ToArray();
+        //}
 
-        public SCNVector3[] CalcUpperPoints(bool local = false)
-        {
-            var p0 = new CGPoint(_width / 2.0f, _depth / 2.0f);
-            var p1 = new CGPoint(-_width / 2.0f, _depth / 2.0f);
-            var p2 = new CGPoint(-_width / 2.0f, -_depth / 2.0f);
-            var p3 = new CGPoint(_width / 2.0f, -_depth / 2.0f);
+        //public SCNVector3[] CalcUpperPoints(bool local = false)
+        //{
+        //    var p0 = new CGPoint(_width / 2.0f, _depth / 2.0f);
+        //    var p1 = new CGPoint(-_width / 2.0f, _depth / 2.0f);
+        //    var p2 = new CGPoint(-_width / 2.0f, -_depth / 2.0f);
+        //    var p3 = new CGPoint(_width / 2.0f, -_depth / 2.0f);
 
-            var vector = new SCNVector3();
-            var points = new List<CGPoint>() { p0, p1, p2, p3 };
-            if (!local)
-            {
-                p0 = p0.Rotate(-_angle);
-                p1 = p1.Rotate(-_angle);
-                p2 = p2.Rotate(-_angle);
-                p3 = p3.Rotate(-_angle);
-                vector = _position;
-            }
-            var res = points.Select(p => new SCNVector3(p.X + vector.X, vector.Y + _height, p.Z + vector.Z));
-            return res.ToArray();
-        }
+        //    var vector = new SCNVector3();
+        //    var points = new List<CGPoint>() { p0, p1, p2, p3 };
+        //    if (!local)
+        //    {
+        //        p0 = p0.Rotate(-_angle);
+        //        p1 = p1.Rotate(-_angle);
+        //        p2 = p2.Rotate(-_angle);
+        //        p3 = p3.Rotate(-_angle);
+        //        vector = _position;
+        //    }
+        //    var res = points.Select(p => new SCNVector3(p.X + vector.X, vector.Y + _height, p.Z + vector.Z));
+        //    return res.ToArray();
+        //}
 
-        public SCNVector3[] CalcFrontPoints(bool local = false)
-        {
-            var p0 = new CGPoint(_width / 2.0f, _depth / 2.0f);
-            var p1 = new CGPoint(-_width / 2.0f, _depth / 2.0f);
+        //public SCNVector3[] CalcFrontPoints(bool local = false)
+        //{
+        //    var p0 = new CGPoint(_width / 2.0f, _depth / 2.0f);
+        //    var p1 = new CGPoint(-_width / 2.0f, _depth / 2.0f);
 
-            var vector = new SCNVector3();
-            var points = new List<CGPoint>() { p0, p1 };
-            if (!local)
-            {
-                p0 = p0.Rotate(-_angle);
-                p1 = p1.Rotate(-_angle);
-                vector = _position;
-            }
-            SCNVector3[] res = new SCNVector3[4];
-            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Z + vector.Z);
-            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Z + vector.Z);
-            res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Z + vector.Z);
-            res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Z + vector.Z);
-            return res;
-        }
+        //    var vector = new SCNVector3();
+        //    var points = new List<CGPoint>() { p0, p1 };
+        //    if (!local)
+        //    {
+        //        p0 = p0.Rotate(-_angle);
+        //        p1 = p1.Rotate(-_angle);
+        //        vector = _position;
+        //    }
+        //    SCNVector3[] res = new SCNVector3[4];
+        //    res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Z + vector.Z);
+        //    res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Z + vector.Z);
+        //    res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Z + vector.Z);
+        //    res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Z + vector.Z);
+        //    return res;
+        //}
 
-        public SCNVector3[] CalcBackPoints(bool local = false)
-        {
-            var p0 = new CGPoint(_width / 2.0f, -_depth / 2.0f);
-            var p1 = new CGPoint(-_width / 2.0f, -_depth / 2.0f);
+        //public SCNVector3[] CalcBackPoints(bool local = false)
+        //{
+        //    var p0 = new CGPoint(_width / 2.0f, -_depth / 2.0f);
+        //    var p1 = new CGPoint(-_width / 2.0f, -_depth / 2.0f);
 
-            var vector = new SCNVector3();
-            var points = new List<CGPoint>() { p0, p1 };
-            if (!local)
-            {
-                p0 = p0.Rotate(-_angle);
-                p1 = p1.Rotate(-_angle);
-                vector = _position;
-            }
-            SCNVector3[] res = new SCNVector3[4];
-            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Z + vector.Z);
-            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Z + vector.Z);
-            res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Z + vector.Z);
-            res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Z + vector.Z);
-            return res;
-        }
+        //    var vector = new SCNVector3();
+        //    var points = new List<CGPoint>() { p0, p1 };
+        //    if (!local)
+        //    {
+        //        p0 = p0.Rotate(-_angle);
+        //        p1 = p1.Rotate(-_angle);
+        //        vector = _position;
+        //    }
+        //    SCNVector3[] res = new SCNVector3[4];
+        //    res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Z + vector.Z);
+        //    res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Z + vector.Z);
+        //    res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Z + vector.Z);
+        //    res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Z + vector.Z);
+        //    return res;
+        //}
 
-        public SCNVector3[] CalcRightPoints(bool local = false)
-        {
-            var p0 = new CGPoint(-_width / 2.0f, _depth / 2.0f);
-            var p1 = new CGPoint(-_width / 2.0f, -_depth / 2.0f);
+        //public SCNVector3[] CalcRightPoints(bool local = false)
+        //{
+        //    var p0 = new CGPoint(-_width / 2.0f, _depth / 2.0f);
+        //    var p1 = new CGPoint(-_width / 2.0f, -_depth / 2.0f);
 
-            var vector = new SCNVector3();
-            var points = new List<CGPoint>() { p0, p1 };
-            if (!local)
-            {
-                p0 = p0.Rotate(-_angle);
-                p1 = p1.Rotate(-_angle);
-                vector = _position;
-            }
-            SCNVector3[] res = new SCNVector3[4];
-            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Z + vector.Z);
-            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Z + vector.Z);
-            res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Z + vector.Z);
-            res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Z + vector.Z);
-            return res;
-        }
+        //    var vector = new SCNVector3();
+        //    var points = new List<CGPoint>() { p0, p1 };
+        //    if (!local)
+        //    {
+        //        p0 = p0.Rotate(-_angle);
+        //        p1 = p1.Rotate(-_angle);
+        //        vector = _position;
+        //    }
+        //    SCNVector3[] res = new SCNVector3[4];
+        //    res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Z + vector.Z);
+        //    res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Z + vector.Z);
+        //    res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Z + vector.Z);
+        //    res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Z + vector.Z);
+        //    return res;
+        //}
 
-        public SCNVector3[] CalcLeftPoints(bool local = false)
-        {
-            var p0 = new CGPoint(_width / 2.0f, _depth / 2.0f);
-            var p1 = new CGPoint(_width / 2.0f, -_depth / 2.0f);
+        //public SCNVector3[] CalcLeftPoints(bool local = false)
+        //{
+        //    var p0 = new CGPoint(_width / 2.0f, _depth / 2.0f);
+        //    var p1 = new CGPoint(_width / 2.0f, -_depth / 2.0f);
 
-            var vector = new SCNVector3();
-            var points = new List<CGPoint>() { p0, p1 };
-            if (!local)
-            {
-                p0 = p0.Rotate(-_angle);
-                p1 = p1.Rotate(-_angle);
-                vector = _position;
-            }
-            SCNVector3[] res = new SCNVector3[4];
-            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Z + vector.Z);
-            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Z + vector.Z);
-            res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Z + vector.Z);
-            res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Z + vector.Z);
-            return res;
-        }
+        //    var vector = new SCNVector3();
+        //    var points = new List<CGPoint>() { p0, p1 };
+        //    if (!local)
+        //    {
+        //        p0 = p0.Rotate(-_angle);
+        //        p1 = p1.Rotate(-_angle);
+        //        vector = _position;
+        //    }
+        //    SCNVector3[] res = new SCNVector3[4];
+        //    res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Z + vector.Z);
+        //    res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Z + vector.Z);
+        //    res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Z + vector.Z);
+        //    res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Z + vector.Z);
+        //    return res;
+        //}
 
         public SCNVector3[] CalcPoints(bool local = false)
         {
@@ -905,7 +924,7 @@ namespace SRcsharp.Library
             var p3 = new CGPoint(_width / 2.0f, -_depth / 2.0f);
 
             var vector = new SCNVector3();
-            var points = new CGPoint[] { p0, p1, p2, p3 };
+            //var points = new CGPoint[] { p0, p1, p2, p3 };
             if (!local)
             {
                 p0 = p0.Rotate(-_angle);
@@ -992,34 +1011,118 @@ namespace SRcsharp.Library
                 return zone;
             }
 
+            var directions = CoordinateSystemDirections.None;
             if (point.X + delta > _width / 2.0f)
             {
-                zone |= BBoxSectors.Left;
+                directions |= CoordinateSystemDirections.XPos;
             }
             else if (-point.X + delta > _width / 2.0f)
             {
-                zone |= BBoxSectors.Right;
+                directions |= CoordinateSystemDirections.XNeg;
             }
 
             if (point.Z + delta > _depth / 2.0f)
             {
-                zone |= BBoxSectors.Ahead;
+                directions |= CoordinateSystemDirections.ZPos;
             }
             else if (-point.Z + delta > _depth / 2.0f)
             {
-                zone |= BBoxSectors.Behind;
+                directions |= CoordinateSystemDirections.ZNeg;
             }
 
             if (point.Y + delta > _height)
             {
-                zone |= BBoxSectors.Above;
+                directions |= CoordinateSystemDirections.YPos;
             }
             else if (point.Y - delta < 0.0f)
             {
-                zone |= BBoxSectors.Below;
+                directions |= CoordinateSystemDirections.YNeg;
             }
 
+            zone = GetBBoxSectorByCoordSystem(directions);
+
+            //if (point.X + delta > _width / 2.0f)
+            //{
+            //    zone |= BBoxSectors.Left;
+            //}
+            //else if (-point.X + delta > _width / 2.0f)
+            //{
+            //    zone |= BBoxSectors.Right;
+            //}
+
+            //if (point.Z + delta > _depth / 2.0f)
+            //{
+            //    zone |= BBoxSectors.Ahead;
+            //}
+            //else if (-point.Z + delta > _depth / 2.0f)
+            //{
+            //    zone |= BBoxSectors.Behind;
+            //}
+
+            //if (point.Y + delta > _height)
+            //{
+            //    zone |= BBoxSectors.Above;
+            //}
+            //else if (point.Y - delta < 0.0f)
+            //{
+            //    zone |= BBoxSectors.Below;
+            //}
+
             return zone;
+        }
+
+        private BBoxSectors GetBBoxSectorByCoordSystem(CoordinateSystemDirections directions)
+        {
+            var sectors = BBoxSectors.None;
+            //existing implementation, should not be inverted for right handed??????
+            if (_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
+            {
+                if (directions.HasFlag(CoordinateSystemDirections.XPos))
+                    sectors |= BBoxSectors.Left;
+                else if (directions.HasFlag(CoordinateSystemDirections.XNeg))
+                    sectors |= BBoxSectors.Right;
+            }
+            else
+            {
+                if (directions.HasFlag(CoordinateSystemDirections.XPos))
+                    sectors |= BBoxSectors.Right;
+                else if (directions.HasFlag(CoordinateSystemDirections.XNeg))
+                    sectors |= BBoxSectors.Left;
+            }
+
+            
+          
+
+            if(_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded)) 
+            {
+                if (directions.HasFlag(CoordinateSystemDirections.ZPos))
+                    sectors |= BBoxSectors.Ahead;
+                else if (directions.HasFlag(CoordinateSystemDirections.ZNeg))
+                    sectors |= BBoxSectors.Behind;
+            }
+            else
+            {
+                if (directions.HasFlag(CoordinateSystemDirections.ZPos))
+                    sectors |= BBoxSectors.Behind;
+                else if (directions.HasFlag(CoordinateSystemDirections.ZNeg))
+                    sectors |= BBoxSectors.Ahead;
+            }
+
+            if (_coordinateSystem.HasFlag(CoordinateSystemTypes.YUp))
+            {
+                if (directions.HasFlag(CoordinateSystemDirections.YPos))
+                    sectors |= BBoxSectors.Above;
+                else if (directions.HasFlag(CoordinateSystemDirections.YNeg))
+                    sectors |= BBoxSectors.Below;
+            }
+            else
+            {
+                if (directions.HasFlag(CoordinateSystemDirections.YPos))
+                    sectors |= BBoxSectors.Below;
+                else if (directions.HasFlag(CoordinateSystemDirections.YNeg))
+                    sectors |= BBoxSectors.Above;
+            }
+            return sectors;
         }
 
         public float CalcNearbyRadius()
@@ -1159,7 +1262,12 @@ namespace SRcsharp.Library
             {
                 if (_type == "Person" || (_cause == ObjectCause.SelfTracked && _existence == SpatialExistence.Real))
                 {
-                    var rad = Math.Atan2(subject.Center.X, subject.Center.Z);
+                    var rad = 0.0d;
+                    if (_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
+                        rad = Math.Atan2(subject.Center.X, subject.Center.Z);
+                    else
+                        rad = Math.Atan2(subject.Center.X, -subject.Center.Z);
+
                     var angle = rad * 180.0f / Math.PI;
                     float hourAngle = 30.0f; // 360.0/12.0
                     if (angle < 0.0f)
@@ -1488,10 +1596,21 @@ namespace SRcsharp.Library
                 // Compare the zone and compute the minimal distances
                 if (centerZone == BBoxSectors.Left)
                 {
-                    foreach (var pt in localPts)
+                    if (_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
                     {
-                        min = Math.Min(min, pt.X - _width / 2.0f);
+                        foreach (var pt in localPts)
+                        {
+                            min = Math.Min(min, pt.X - _width / 2.0f);
+                        }
                     }
+                    else
+                    {
+                        foreach (var pt in localPts)
+                        {
+                            min = Math.Min(min, -pt.X - _width / 2.0f);
+                        }
+                    }
+                   
                     if (min >= 0.0f)
                     {
                         canNotOverlap = true;
@@ -1504,10 +1623,21 @@ namespace SRcsharp.Library
                 }
                 else if (centerZone == BBoxSectors.Right)
                 {
-                    foreach (var pt in localPts)
+                    if (_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
                     {
-                        min = Math.Min(min, -pt.X - Width / 2.0f);
+                        foreach (var pt in localPts)
+                        {
+                            min = Math.Min(min, -pt.X - Width / 2.0f);
+                        }
                     }
+                    else
+                    {
+                        foreach (var pt in localPts)
+                        {
+                            min = Math.Min(min, pt.X - Width / 2.0f);
+                        }
+                    }
+                   
                     if (min >= 0.0f)
                     {
                         canNotOverlap = true;
@@ -1519,10 +1649,21 @@ namespace SRcsharp.Library
                 }
                 else if (centerZone == BBoxSectors.Above)
                 {
-                    foreach (var pt in localPts)
+                    if (_coordinateSystem.HasFlag(CoordinateSystemTypes.YUp))
                     {
-                        min = Math.Min(min, pt.Y - Height);
+                        foreach (var pt in localPts)
+                        {
+                            min = Math.Min(min, pt.Y - Height);
+                        }
                     }
+                    else
+                    {
+                        foreach (var pt in localPts)
+                        {
+                            min = Math.Min(min, -pt.Y - Height);
+                        }
+                    }
+                   
                     if (min >= 0.0f)
                     {
                         canNotOverlap = true;
@@ -1541,10 +1682,21 @@ namespace SRcsharp.Library
                 }
                 else if (centerZone == BBoxSectors.Below)
                 {
-                    foreach (var pt in localPts)
+                    if (_coordinateSystem.HasFlag(CoordinateSystemTypes.YUp))
                     {
-                        min = Math.Min(min, -pt.Y);
+                        foreach (var pt in localPts)
+                        {
+                            min = Math.Min(min, -pt.Y);
+                        }
                     }
+                    else
+                    {
+                        foreach (var pt in localPts)
+                        {
+                            min = Math.Min(min, pt.Y);
+                        }
+                    }
+                   
                     if (min >= 0.0f)
                     {
                         canNotOverlap = true;
@@ -1558,10 +1710,21 @@ namespace SRcsharp.Library
                 }
                 else if (centerZone == BBoxSectors.Ahead)
                 {
-                    foreach (var pt in localPts)
+                    if (_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
                     {
-                        min = Math.Min(min, pt.Z - _depth / 2.0f);
+                        foreach (var pt in localPts)
+                        {
+                            min = Math.Min(min, pt.Z - _depth / 2.0f);
+                        }
                     }
+                    else
+                    {
+                        foreach (var pt in localPts)
+                        {
+                            min = Math.Min(min, -pt.Z - _depth / 2.0f);
+                        }
+                    }
+
                     if (min >= 0.0f)
                     {
                         canNotOverlap = true;
@@ -1574,10 +1737,21 @@ namespace SRcsharp.Library
                 }
                 else if (centerZone == BBoxSectors.Behind)
                 {
-                    foreach (var pt in localPts)
+                    if (_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
                     {
-                        min = Math.Min(min, -pt.Z - _depth / 2.0f);
+                        foreach (var pt in localPts)
+                        {
+                            min = Math.Min(min, -pt.Z - _depth / 2.0f);
+                        }
                     }
+                    else
+                    {
+                        foreach (var pt in localPts)
+                        {
+                            min = Math.Min(min, pt.Z - _depth / 2.0f);
+                        }
+                    }
+
                     if (min >= 0.0f)
                     {
                         canNotOverlap = true;
@@ -1605,7 +1779,10 @@ namespace SRcsharp.Library
             // Check if center zone contains Left
             if (centerZone.HasFlag(BBoxSectors.Left))
             {
-                gap = localCenter.X - _width / 2.0f - subject.Width / 2.0f;
+                if(_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
+                    gap = localCenter.X - _width / 2.0f - subject.Width / 2.0f;
+                else
+                    gap = -localCenter.X - _width / 2.0f - subject.Width / 2.0f;
                 minDistance = gap;
                 var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateDirectionality>((int)SpatialPredicateDirectionality.Left), this, gap, theta);
                 result.Add(relation);
@@ -1613,7 +1790,10 @@ namespace SRcsharp.Library
             // Check if center zone contains Right
             else if (centerZone.HasFlag(BBoxSectors.Right))
             {
-                gap = -localCenter.X - _width / 2.0f - subject.Width / 2.0f;
+                if (_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
+                    gap = -localCenter.X - _width / 2.0f - subject.Width / 2.0f;
+                else
+                    gap = localCenter.X - _width / 2.0f - subject.Width / 2.0f;
                 minDistance = gap;
                 var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateDirectionality>((int)SpatialPredicateDirectionality.Right), this, gap, theta);
                 result.Add(relation);
@@ -1622,7 +1802,10 @@ namespace SRcsharp.Library
             // Check if center zone contains Ahead
             if (centerZone.HasFlag(BBoxSectors.Ahead))
             {
-                gap = localCenter.Z - _depth / 2.0f - subject.Depth / 2.0f;
+                if (_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
+                    gap = localCenter.Z - _depth / 2.0f - subject.Depth / 2.0f;
+                else 
+                    gap = -localCenter.Z - _depth / 2.0f - subject.Depth / 2.0f;
                 minDistance = gap;
                 var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateDirectionality>((int)SpatialPredicateDirectionality.Ahead), this, gap, theta);
                 result.Add(relation);
@@ -1630,7 +1813,10 @@ namespace SRcsharp.Library
             // Check if center zone contains Behind
             else if (centerZone.HasFlag(BBoxSectors.Behind))
             {
-                gap = -localCenter.Z - _depth / 2.0f - subject.Depth / 2.0f;
+                if (_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
+                    gap = -localCenter.Z - _depth / 2.0f - subject.Depth / 2.0f;
+                else 
+                    gap = localCenter.Z - _depth / 2.0f - subject.Depth / 2.0f;
                 minDistance = gap;
                 var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateDirectionality>((int)SpatialPredicateDirectionality.Behind), this, gap, theta);
                 result.Add(relation);
@@ -1639,7 +1825,10 @@ namespace SRcsharp.Library
             // Check if center zone contains Above
             if (centerZone.HasFlag(BBoxSectors.Above))
             {
-                gap = localCenter.Y - subject.Height / 2.0f - _height;
+                if (_coordinateSystem.HasFlag(CoordinateSystemTypes.YUp))
+                    gap = localCenter.Y - subject.Height / 2.0f - _height;
+                else 
+                    gap = -localCenter.Y - subject.Height / 2.0f;
                 minDistance = gap;
                 var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateDirectionality>((int)SpatialPredicateDirectionality.Above), this, gap, theta);
                 result.Add(relation);
@@ -1647,7 +1836,10 @@ namespace SRcsharp.Library
             // Check if center zone contains Below
             else if (centerZone.HasFlag(BBoxSectors.Below))
             {
-                gap = -localCenter.Y - subject.Height / 2.0f;
+                if (_coordinateSystem.HasFlag(CoordinateSystemTypes.YUp))
+                    gap = -localCenter.Y - subject.Height / 2.0f;
+                else 
+                    gap = localCenter.Y - subject.Height / 2.0f - _height;
                 minDistance = gap;
                 var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateDirectionality>((int)SpatialPredicateDirectionality.Below), this, gap, theta);
                 result.Add(relation);
@@ -1672,6 +1864,7 @@ namespace SRcsharp.Library
             }
             return (gap,minDistance);
         }
+
 
         public List<SpatialRelation> CalcSimilarities(SpatialObject subject)
         {
@@ -1939,29 +2132,62 @@ namespace SRcsharp.Library
 
                     if (Math.Abs(xgap) > Math.Min(_width / 2.0f, _depth / 2.0f) && Math.Abs(zgap) < radiusSum)
                     {
-                        if (xgap > 0.0f)
+                        if(_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
                         {
-                            var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.SeenLeft), this, Math.Abs(xgap), 0.0f);
-                            result.Add(relation);
+                            if (xgap > 0.0f)
+                            {
+                                var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.SeenLeft), this, Math.Abs(xgap), 0.0f);
+                                result.Add(relation);
+                            }
+                            else
+                            {
+                                var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.SeenRight), this, Math.Abs(xgap), 0.0f);
+                                result.Add(relation);
+                            }
                         }
-                        else
+                        else 
                         {
-                            var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.SeenRight), this, Math.Abs(xgap), 0.0f);
-                            result.Add(relation);
+                            if (xgap < 0.0f)
+                            {
+                                var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.SeenLeft), this, Math.Abs(xgap), 0.0f);
+                                result.Add(relation);
+                            }
+                            else
+                            {
+                                var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.SeenRight), this, Math.Abs(xgap), 0.0f);
+                                result.Add(relation);
+                            }
                         }
+                       
                     }
 
                     if (Math.Abs(zgap) > Math.Min(_width / 2.0f, _depth / 2.0f) && Math.Abs(xgap) < radiusSum)
                     {
-                        if (zgap > 0.0f)
+                        if (_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
                         {
-                            var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.AtRear), this, Math.Abs(zgap), 0.0f);
-                            result.Add(relation);
+                            if (zgap > 0.0f)
+                            {
+                                var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.AtRear), this, Math.Abs(zgap), 0.0f);
+                                result.Add(relation);
+                            }
+                            else
+                            {
+                                var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.InFront), this, Math.Abs(zgap), 0.0f);
+                                result.Add(relation);
+                            }
                         }
                         else
                         {
-                            var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.InFront), this, Math.Abs(zgap), 0.0f);
-                            result.Add(relation);
+                            if (zgap < 0.0f)
+                            {
+                                var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.AtRear), this, Math.Abs(zgap), 0.0f);
+                                result.Add(relation);
+                            }
+                            else
+                            {
+                                var relation = new SpatialRelation(subject, SpatialPredicate.CreateSpatialPredicate<SpatialPredicateVisibility>((int)SpatialPredicateVisibility.InFront), this, Math.Abs(zgap), 0.0f);
+                                result.Add(relation);
+                            }
                         }
                     }
                 }

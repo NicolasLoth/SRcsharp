@@ -120,7 +120,33 @@ namespace SRcsharp.Library
             Openable
         }
 
-       
+        [Flags]
+        public enum CoordinateSystemTypes 
+        { 
+            Undefined = 0, 
+            RightHanded = 1, 
+            LeftHanded = 2, 
+            YUp = 4, 
+            YDown = 8, 
+            RightHandedYUp = 5, 
+            LeftHandedYUp = 6, 
+            RightHandedYDown = 9, 
+            LeftHandedYDown = 10 
+        }
+
+        [Flags]
+        public enum CoordinateSystemDirections 
+        { 
+            None = 0,
+            XPos = 1, 
+            XNeg = 2, 
+            YPos = 4, 
+            YNeg = 8, 
+            ZPos = 16, 
+            ZNeg = 32 
+        };
+
+
 
 
     }
