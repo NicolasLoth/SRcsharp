@@ -7,8 +7,8 @@ namespace SRcsharp.Library
     public struct CGVector
     {
 
-        private Vector2 _rawValue;
 
+        private Vector2 _rawValue;
         public Vector2 RawValue
         {
             get { return _rawValue; }
@@ -17,10 +17,6 @@ namespace SRcsharp.Library
         public float DX { get { return _rawValue.X; } set { _rawValue.X = value; } }
         public float DY { get { return _rawValue.Y; } set { _rawValue.Y = value; } }
 
-        //public CGVector()
-        //{
-        //    _rawValue = new Vector2();
-        //}
 
         public CGVector(float x, float y)
         {

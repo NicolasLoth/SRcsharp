@@ -506,7 +506,7 @@ namespace SRcsharp.Library
             float midVectorLength = midVector.Length;
             float factor = depth / midVectorLength / 2.0f;
             var normal = new CGPoint(midVector.X * factor, midVector.Z * factor).Rotate(((float)(Math.PI / 2.0f)));
-            var pos = from + midVector - new SCNVector3(normal.X, 0.0f, normal.Y);
+            var pos = from + midVector - new SCNVector3(normal.X, 0.0f, normal.Z);
             var obj = new SpatialObject(id, pos, midVectorLength * 2.0f, height, depth)
             {
                 Angle = -(float)Math.Atan2(midVector.Z, midVector.X),
@@ -788,7 +788,7 @@ namespace SRcsharp.Library
                 p3 = p3.Rotate(-_angle);
                 vector = _position;
             }
-            var res = points.Select(p => new SCNVector3(p.X + vector.X, vector.Y, p.Y + vector.Z));
+            var res = points.Select(p => new SCNVector3(p.X + vector.X, vector.Y, p.Z + vector.Z));
             return res.ToArray();
         }
 
@@ -809,7 +809,7 @@ namespace SRcsharp.Library
                 p3 = p3.Rotate(-_angle);
                 vector = _position;
             }
-            var res = points.Select(p => new SCNVector3(p.X + vector.X, vector.Y + _height, p.Y + vector.Z));
+            var res = points.Select(p => new SCNVector3(p.X + vector.X, vector.Y + _height, p.Z + vector.Z));
             return res.ToArray();
         }
 
@@ -827,10 +827,10 @@ namespace SRcsharp.Library
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[4];
-            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Y + vector.Z);
-            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Y + vector.Z);
-            res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Y + vector.Z);
-            res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Y + vector.Z);
+            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Z + vector.Z);
+            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Z + vector.Z);
+            res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Z + vector.Z);
+            res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Z + vector.Z);
             return res;
         }
 
@@ -848,10 +848,10 @@ namespace SRcsharp.Library
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[4];
-            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Y + vector.Z);
-            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Y + vector.Z);
-            res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Y + vector.Z);
-            res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Y + vector.Z);
+            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Z + vector.Z);
+            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Z + vector.Z);
+            res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Z + vector.Z);
+            res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Z + vector.Z);
             return res;
         }
 
@@ -869,10 +869,10 @@ namespace SRcsharp.Library
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[4];
-            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Y + vector.Z);
-            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Y + vector.Z);
-            res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Y + vector.Z);
-            res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Y + vector.Z);
+            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Z + vector.Z);
+            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Z + vector.Z);
+            res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Z + vector.Z);
+            res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Z + vector.Z);
             return res;
         }
 
@@ -890,10 +890,10 @@ namespace SRcsharp.Library
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[4];
-            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Y + vector.Z);
-            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Y + vector.Z);
-            res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Y + vector.Z);
-            res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Y + vector.Z);
+            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Z + vector.Z);
+            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Z + vector.Z);
+            res[2] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Z + vector.Z);
+            res[3] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Z + vector.Z);
             return res;
         }
 
@@ -915,14 +915,14 @@ namespace SRcsharp.Library
                 vector = _position;
             }
             SCNVector3[] res = new SCNVector3[8];
-            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Y + vector.Z);
-            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Y + vector.Z);
-            res[2] = new SCNVector3(p2.X + vector.X, vector.Y, p2.Y + vector.Z);
-            res[3] = new SCNVector3(p3.X + vector.X, vector.Y, p3.Y + vector.Z);
-            res[4] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Y + vector.Z);
-            res[5] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Y + vector.Z);
-            res[6] = new SCNVector3(p2.X + vector.X, vector.Y + _height, p2.Y + vector.Z);
-            res[7] = new SCNVector3(p3.X + vector.X, vector.Y + _height, p3.Y + vector.Z);
+            res[0] = new SCNVector3(p0.X + vector.X, vector.Y, p0.Z + vector.Z);
+            res[1] = new SCNVector3(p1.X + vector.X, vector.Y, p1.Z + vector.Z);
+            res[2] = new SCNVector3(p2.X + vector.X, vector.Y, p2.Z + vector.Z);
+            res[3] = new SCNVector3(p3.X + vector.X, vector.Y, p3.Z + vector.Z);
+            res[4] = new SCNVector3(p0.X + vector.X, vector.Y + _height, p0.Z + vector.Z);
+            res[5] = new SCNVector3(p1.X + vector.X, vector.Y + _height, p1.Z + vector.Z);
+            res[6] = new SCNVector3(p2.X + vector.X, vector.Y + _height, p2.Z + vector.Z);
+            res[7] = new SCNVector3(p3.X + vector.X, vector.Y + _height, p3.Z + vector.Z);
             return res;
         }
 

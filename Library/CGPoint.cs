@@ -8,7 +8,8 @@ namespace SRcsharp.Library
     public struct CGPoint
     {
 
-		private Vector2 _rawValue;
+
+        private Vector2 _rawValue;
 
 		public Vector2 RawValue
 		{
@@ -16,16 +17,12 @@ namespace SRcsharp.Library
 		}
 
 		public float X { get { return _rawValue.X; } set { _rawValue.X = value; } }
-        public float Y { get { return _rawValue.Y; } set { _rawValue.Y = value; } }
+        public float Z { get { return _rawValue.Y; } set { _rawValue.Y = value; } }
 
-        //public CGPoint()
-        //{
-        //    _rawValue = new Vector2();
-        //}
 
-        public CGPoint(float x, float y)
+        public CGPoint(float x, float z)
 		{
-			_rawValue = new Vector2(x, y);
+            _rawValue = new Vector2(x, z);
 		}
 
         public float Length { get { return _rawValue.Length(); } }
@@ -39,10 +36,10 @@ namespace SRcsharp.Library
         {
             var rotationSin = Math.Sin(radians);
             var rotationCos = Math.Cos(radians);
-            var x = ((X - pivot.X) * rotationCos - (Y - pivot.Y) * rotationSin) + pivot.X;
-            var y = ((X - pivot.X) * rotationSin + (Y - pivot.Y) * rotationCos) + pivot.Y;
+            var x = ((X - pivot.X) * rotationCos - (Z - pivot.Y) * rotationSin) + pivot.X;
+            var y = ((X - pivot.X) * rotationSin + (Z - pivot.Y) * rotationCos) + pivot.Y;
             X = (float)x;
-            Y = (float)y;
+            Z = (float)y;
             return this;
             //return new CGPoint((float)x, (float)y);
         }

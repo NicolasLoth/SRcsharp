@@ -279,7 +279,11 @@ namespace SRcsharp.Library
                     if (Input.Count > 0)
                     {
                         
-                        var inputObjects = new List<SpatialObject>(Fact.Objects);
+                        var inputObjects = new List<SpatialObject>();
+                        foreach (var idx in _input)
+                        {
+                            inputObjects.Add(Fact.Objects[idx]);
+                        }
 
                         var sortedObjects = inputObjects.OrderByDescending(o => o.Volume).ToList();
                         var largestObject = sortedObjects.FirstOrDefault();
@@ -620,9 +624,13 @@ namespace SRcsharp.Library
         public void SortByRelation(string param, int backtraceSteps = 1)
         {
             bool ascending = false;
-            var inputObjects = new List<SpatialObject>(Fact.Objects);
+            var inputObjects = new List<SpatialObject>();
             var steps = backtraceSteps;
             
+            foreach(var idx in _input)
+            {
+                inputObjects.Add(Fact.Objects[idx]);
+            }
 
             var list = param.Split(' ').Select(a => a.Trim()).ToArray();
             var attribute = list[0];

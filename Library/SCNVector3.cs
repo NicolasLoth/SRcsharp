@@ -7,8 +7,8 @@ namespace SRcsharp.Library
     public struct SCNVector3
     {
 
-        private Vector3 _rawValue;
 
+        private Vector3 _rawValue;
         public Vector3 RawValue
         {
             get { return _rawValue; }
@@ -16,7 +16,7 @@ namespace SRcsharp.Library
 
         public float X { get { return _rawValue.X; } set { _rawValue.X = value; } }
         public float Y { get { return _rawValue.Y; } set { _rawValue.Y = value; } }
-        public float Z { get { return _rawValue.Z; } set { _rawValue.Z = value; } }
+        public float Z { get { return _rawValue.Z; } set { _rawValue.Z = value; } } 
 
 
         //public SCNVector3()
@@ -36,8 +36,7 @@ namespace SRcsharp.Library
 
         public float Length { get { return _rawValue.Length(); } }
 
-        public static SCNVector3 Zero { get { var vec = new SCNVector3(0,0,0); return vec; } }
-        public static SCNVector3 One { get { var vec = new SCNVector3(1,1,1); return vec; } }
+        public static SCNVector3 Zero { get { var vec = new SCNVector3(0, 0, 0); return vec; } }
 
         public SCNVector3[] Nearest(SCNVector3[] pts)
         {
