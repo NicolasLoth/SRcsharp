@@ -36,7 +36,7 @@ namespace SRcsharp.Library
             return (double)(dt.Rows[0]["Eval"]);
         }
 
-        public static bool Eval(string expression)
+        public static bool Eval(string expression, bool throwException=true)
         {
             bool? res = null;
             try
@@ -62,13 +62,25 @@ namespace SRcsharp.Library
             return (bool)cDT.Compute(expression, "");
         }
 
-        public static bool XEval(string expression)
+        public static bool XEval(string expression, bool throwException = true)
         {
             expression = new System.Text.RegularExpressions.Regex(@"not +(true|false)").Replace(expression.ToLower(), " not(${1}) ");
             expression = new System.Text.RegularExpressions.Regex(@"(true|false)").Replace(expression, " ${1}() ");
 
-            return (bool)new System.Xml.XPath.XPathDocument(new System.IO.StringReader("<r/>")).CreateNavigator()
+            var res = false;
+            try
+            {
+                res = (bool)new System.Xml.XPath.XPathDocument(new System.IO.StringReader("<r/>")).CreateNavigator()
                     .Evaluate(String.Format("boolean({0})", expression));
+            }
+            catch (Exception ex)
+            {
+                if (throwException)
+                    throw ex;
+                return false;
+            }
+
+            return res;
         }
     }
 }

@@ -1250,25 +1250,31 @@ namespace SRcsharp.Library
             (minDistance, canNotOverlap, aligned, isBeside) = CalcAndAddAdjacancies(result, subject, minDistance, canNotOverlap, localPts, localCenter, theta);
             gap = CalcAndAddAssembly(result, subject, gap, minDistance, aligned, isBeside, isDisjoint, canNotOverlap, isConnected, localPts, zones, centerDistance, theta);
             (gap, minDistance) = CalcAndAddOrientations(result, subject, gap, minDistance, localCenter, centerDistance, theta);
-            CalcAndAddVisibilities(result, subject, centerDistance);
+            CalcAndAddVisibilities(result, subject,localCenter, centerDistance);
 
             return result;
 
         }
 
-        public void CalcAndAddVisibilities(List<SpatialRelation> result, SpatialObject subject, float centerDistance)
+        public void CalcAndAddVisibilities(List<SpatialRelation> result, SpatialObject subject, SCNVector3 localCenter, float centerDistance)
         {
             if(_context == null || _context.DeduceCategories.HasFlag(SpatialPredicatedCategories.Visbility))
             {
                 if (_type == "Person" || (_cause == ObjectCause.SelfTracked && _existence == SpatialExistence.Real))
                 {
                     var rad = 0.0d;
+                    var angle = 0.0d;
                     if (_coordinateSystem.HasFlag(CoordinateSystemTypes.RightHanded))
+                    {
                         rad = Math.Atan2(subject.Center.X, subject.Center.Z);
+                        angle = rad * 180.0f / Math.PI;
+                    }
                     else
-                        rad = Math.Atan2(subject.Center.X, -subject.Center.Z);
+                    {
+                        rad = -Math.Atan2(localCenter.X, localCenter.Z);
+                        angle = rad * 180.0f / Math.PI;
+                    }
 
-                    var angle = rad * 180.0f / Math.PI;
                     float hourAngle = 30.0f; // 360.0/12.0
                     if (angle < 0.0f)
                     {
