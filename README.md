@@ -32,7 +32,7 @@ Use Visual Studio (Code) to import the SRcsharp library
 
 ### Usage
 
-```
+```csharp 
 var st = new SpatialTerms();
 var obj1 = new SpatialObject(id: "1", position: new SCNVector3(x: -1.5f, y: 1.2f, z: 0), width: 0.1f, height: 1.0f, depth: 0.1f);
 var obj2 = new SpatialObject(id: "2", position: new SCNVector3(x: 0, y: 0, z: 0), width: 0.8f, height: 1.0f, depth: 0.6f);
