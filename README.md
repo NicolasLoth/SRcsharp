@@ -30,6 +30,29 @@ See [__Docu on SpatialReasoner__](https://github.com/metason/SpatialReasoner) in
 
 Use Visual Studio (Code) to import the SRcsharp library
 
+### Usage
+
+var st = new SpatialTerms();
+var obj1 = new SpatialObject(id: "1", position: new SCNVector3(x: -1.5f, y: 1.2f, z: 0), width: 0.1f, height: 1.0f, depth: 0.1f);
+var obj2 = new SpatialObject(id: "2", position: new SCNVector3(x: 0, y: 0, z: 0), width: 0.8f, height: 1.0f, depth: 0.6f);
+var obj3 = new SpatialObject(id: "3", position: new SCNVector3(x: 0, y: 0, z: 1.6f), width: 0.8f, height: 0.8f, depth: 0.8f);
+obj3.Angle = (float)(Math.PI / 2.0);
+
+//Full pipeline input
+var sr = new SpatialReasoner();
+sr.Load(objs);
+var pipeline = "filter(volume > 0.4) | pick(Left OR Above) | log()";
+if (sr.Run(pipeline))
+{
+    Console.WriteLine(string.Join('\n', sr.Result));
+}
+
+//Queued methods
+SpatialReasoner.Create().Load(objs).Filter("volume>0.4").Pick("Left OR Above").CLog();
+
+//Extensions Methods on IEnumerable
+Console.WriteLine(string.Join('\n', SpatialReasoner.Create().Load(objs).Where(so => so.Volume > 0.4).ToList()));
+
 ## Tests
 
 TODO: Comments on Tests and Visualizations
